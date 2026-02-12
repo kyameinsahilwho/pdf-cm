@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, type DragEvent } from 'react';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Merge, Settings, Download, Trash2, ArrowLeftRight, Rows, Columns, Grid, Layers, Combine } from 'lucide-react';
+import { Upload, Merge, Settings, Download, Trash2, ArrowLeftRight, Rows, Columns, Grid, Layers, Combine, RotateCw, Scissors } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { GridSelector } from './grid-selector';
 
@@ -54,11 +54,24 @@ export function PdfFusion() {
   const mergeRestructureInputRef = useRef<HTMLInputElement>(null);
   // Reuse restructureMode, rows, cols for this tab as well
 
+  // Rotate State
+  const [rotateFile, setRotateFile] = useState<RestructureFile | null>(null);
+  const [processingRotate, setProcessingRotate] = useState(false);
+  const [progressRotate, setProgressRotate] = useState(0);
+  const rotateInputRef = useRef<HTMLInputElement>(null);
+
+  // Extract State
+  const [extractFile, setExtractFile] = useState<RestructureFile | null>(null);
+  const [processingExtract, setProcessingExtract] = useState(false);
+  const [progressExtract, setProgressExtract] = useState(0);
+  const [extractRange, setExtractRange] = useState('');
+  const extractInputRef = useRef<HTMLInputElement>(null);
+
 
   const { toast } = useToast();
 
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, type: 'merge' | 'restructure' | 'merge-restructure') => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, type: 'merge' | 'restructure' | 'merge-restructure' | 'rotate' | 'extract') => {
     const files = event.target.files;
     if (!files) return;
 
@@ -83,19 +96,221 @@ export function PdfFusion() {
        }
     } else if (type === 'merge-restructure') {
         setMergeRestructureFiles((prevFiles) => [...prevFiles, ...newFiles]);
+    } else if (type === 'rotate') {
+       if (rotateFile) {
+         toast({
+           title: "Replace File",
+           description: "Replacing the existing file for rotation.",
+           variant: "default",
+         });
+       }
+       if (newFiles.length > 0) {
+        setRotateFile({ file: newFiles[0].file, name: newFiles[0].name });
+       }
+    } else if (type === 'extract') {
+       if (extractFile) {
+         toast({
+           title: "Replace File",
+           description: "Replacing the existing file for extraction.",
+           variant: "default",
+         });
+       }
+       if (newFiles.length > 0) {
+        setExtractFile({ file: newFiles[0].file, name: newFiles[0].name });
+       }
     }
 
     // Reset file input
     event.target.value = '';
   };
 
-  const removeFile = (id: string, type: 'merge' | 'restructure' | 'merge-restructure') => {
+  const removeFile = (id: string, type: 'merge' | 'restructure' | 'merge-restructure' | 'rotate' | 'extract') => {
     if (type === 'merge') {
       setMergeFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
     } else if (type === 'restructure'){
       setRestructureFile(null);
     } else if (type === 'merge-restructure'){
         setMergeRestructureFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
+    } else if (type === 'rotate') {
+      setRotateFile(null);
+    } else if (type === 'extract') {
+      setExtractFile(null);
+    }
+  };
+
+  const handleExtract = async () => {
+    if (!extractFile) {
+      toast({
+        title: 'Error',
+        description: 'Please select a PDF file to extract pages from.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!extractRange) {
+        toast({
+            title: 'Error',
+            description: 'Please enter page numbers to extract (e.g., "1, 3-5").',
+            variant: 'destructive',
+        });
+        return;
+    }
+
+    setProcessingExtract(true);
+    setProgressExtract(0);
+
+    try {
+      const pdfBytes = await extractFile.file.arrayBuffer();
+      let pdfDoc;
+      try {
+        pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+      } catch (loadError: any) {
+         if (loadError.message.toLowerCase().includes('encrypted')) {
+             throw new Error('The PDF is encrypted and cannot be processed.');
+         }
+         if (loadError.message.toLowerCase().includes('invalid pdf structure') || loadError.message.toLowerCase().includes('expected') || loadError.message.toLowerCase().includes('offset')) {
+             throw new Error(`The file "${extractFile.name}" is not a valid PDF or is corrupted.`);
+         }
+         throw loadError;
+      }
+      if (pdfDoc.isEncrypted) {
+         throw new Error(`The file "${extractFile.name}" is encrypted and cannot be processed.`);
+      }
+
+      const totalPages = pdfDoc.getPageCount();
+      const pageIndicesToExtract = new Set<number>();
+
+      // Parse range string
+      const parts = extractRange.split(',').map(p => p.trim());
+      for (const part of parts) {
+          if (part.includes('-')) {
+              const [start, end] = part.split('-').map(num => parseInt(num, 10));
+              if (isNaN(start) || isNaN(end)) continue;
+               // Adjust for 0-based index
+              const s = Math.min(start, end);
+              const e = Math.max(start, end);
+              for (let i = s; i <= e; i++) {
+                  if (i >= 1 && i <= totalPages) pageIndicesToExtract.add(i - 1);
+              }
+          } else {
+              const pageNum = parseInt(part, 10);
+              if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
+                  pageIndicesToExtract.add(pageNum - 1);
+              }
+          }
+      }
+
+      if (pageIndicesToExtract.size === 0) {
+          toast({
+              title: 'Error',
+              description: 'Invalid page range or no pages found in range.',
+              variant: 'destructive',
+          });
+          setProcessingExtract(false);
+          return;
+      }
+
+      const sortedIndices = Array.from(pageIndicesToExtract).sort((a, b) => a - b);
+      const newPdfDoc = await PDFDocument.create();
+      const copiedPages = await newPdfDoc.copyPages(pdfDoc, sortedIndices);
+
+      for (let i = 0; i < copiedPages.length; i++) {
+          newPdfDoc.addPage(copiedPages[i]);
+          setProgressExtract(((i + 1) / copiedPages.length) * 100);
+          await new Promise(resolve => setTimeout(resolve, 10));
+      }
+
+      const newPdfBytes = await newPdfDoc.save();
+      downloadPdf(newPdfBytes, `extracted_${extractFile.name}`);
+      toast({
+        title: 'Success',
+        description: 'Pages extracted successfully!',
+      });
+      // Optionally keep the file selected for more extractions
+    } catch (error: any) {
+      console.error('Error extracting PDF:', error);
+      toast({
+        title: 'Extraction Error',
+        description: error.message || 'An unexpected error occurred during extraction.',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessingExtract(false);
+      setProgressExtract(0);
+    }
+  };
+
+  const handleRotate = async () => {
+    if (!rotateFile) {
+      toast({
+        title: 'Error',
+        description: 'Please select a PDF file to rotate.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setProcessingRotate(true);
+    setProgressRotate(0);
+
+    try {
+      const pdfBytes = await rotateFile.file.arrayBuffer();
+      let pdfDoc;
+      try {
+        pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+      } catch (loadError: any) {
+         if (loadError.message.toLowerCase().includes('encrypted')) {
+             throw new Error('The PDF is encrypted and cannot be rotated.');
+         }
+         if (loadError.message.toLowerCase().includes('invalid pdf structure') || loadError.message.toLowerCase().includes('expected') || loadError.message.toLowerCase().includes('offset')) {
+             throw new Error(`The file "${rotateFile.name}" is not a valid PDF or is corrupted.`);
+         }
+         throw loadError;
+      }
+      if (pdfDoc.isEncrypted) {
+         throw new Error(`The file "${rotateFile.name}" is encrypted and cannot be rotated.`);
+      }
+
+      const pages = pdfDoc.getPages();
+      const totalPages = pages.length;
+
+      if (totalPages === 0) {
+          toast({
+              title: 'Error',
+              description: 'The selected PDF has no pages.',
+              variant: 'destructive',
+          });
+          setProcessingRotate(false);
+          return;
+      }
+
+      for (let i = 0; i < totalPages; i++) {
+        const page = pages[i];
+        const rotation = page.getRotation();
+        page.setRotation(degrees(rotation.angle + 90));
+
+        setProgressRotate(((i + 1) / totalPages) * 100);
+        await new Promise(resolve => setTimeout(resolve, 10)); // Small delay
+      }
+
+      const newPdfBytes = await pdfDoc.save();
+      downloadPdf(newPdfBytes, `rotated_${rotateFile.name}`);
+      toast({
+        title: 'Success',
+        description: 'PDF rotated successfully!',
+      });
+       setRotateFile(null);
+    } catch (error: any) {
+      console.error('Error rotating PDF:', error);
+      toast({
+        title: 'Rotation Error',
+        description: error.message || 'An unexpected error occurred during rotation.',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessingRotate(false);
+      setProgressRotate(0);
     }
   };
 
@@ -563,13 +778,17 @@ export function PdfFusion() {
       };
 
   // --- Helper Functions ---
-  const triggerFileInput = (type: 'merge' | 'restructure' | 'merge-restructure') => {
+  const triggerFileInput = (type: 'merge' | 'restructure' | 'merge-restructure' | 'rotate' | 'extract') => {
       if (type === 'merge' && mergeInputRef.current) {
         mergeInputRef.current.click();
       } else if (type === 'restructure' && restructureInputRef.current) {
         restructureInputRef.current.click();
       } else if (type === 'merge-restructure' && mergeRestructureInputRef.current) {
         mergeRestructureInputRef.current.click();
+      } else if (type === 'rotate' && rotateInputRef.current) {
+        rotateInputRef.current.click();
+      } else if (type === 'extract' && extractInputRef.current) {
+        extractInputRef.current.click();
       }
     };
 
@@ -585,15 +804,21 @@ export function PdfFusion() {
 
   return (
     <Tabs defaultValue="merge" className="w-full max-w-4xl mx-auto">
-      <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary">
-        <TabsTrigger value="merge" className="py-3 text-base md:text-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
+      <TabsList className="flex w-full overflow-x-auto mb-6 bg-secondary p-1 h-auto gap-1">
+        <TabsTrigger value="merge" className="flex-1 min-w-fit py-3 px-4 text-base md:text-lg whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
           <Merge className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" /> Merge
         </TabsTrigger>
-        <TabsTrigger value="restructure" className="py-3 text-base md:text-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
+        <TabsTrigger value="restructure" className="flex-1 min-w-fit py-3 px-4 text-base md:text-lg whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
           <Grid className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" /> Restructure
         </TabsTrigger>
-        <TabsTrigger value="merge-restructure" className="py-3 text-base md:text-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
+        <TabsTrigger value="merge-restructure" className="flex-1 min-w-fit py-3 px-4 text-base md:text-lg whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
           <Combine className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" /> Merge & Restructure
+        </TabsTrigger>
+        <TabsTrigger value="rotate" className="flex-1 min-w-fit py-3 px-4 text-base md:text-lg whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
+          <RotateCw className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" /> Rotate
+        </TabsTrigger>
+        <TabsTrigger value="extract" className="flex-1 min-w-fit py-3 px-4 text-base md:text-lg whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
+          <Scissors className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" /> Extract
         </TabsTrigger>
       </TabsList>
 
@@ -735,7 +960,7 @@ export function PdfFusion() {
                {/* Arrangement Options */}
                  <div className="space-y-3">
                      <Label className="text-base font-medium flex items-center gap-2"><ArrowLeftRight className="w-5 h-5 text-primary" /> Arrangement</Label>
-                     <RadioGroup defaultValue="horizontal" value={restructureMode} onValueChange={handleRestructureModeChange} className="flex space-x-4">
+                     <RadioGroup defaultValue="horizontal" value={restructureMode} onValueChange={handleRestructureModeChange} className="flex flex-wrap gap-4">
                        <div className="flex items-center space-x-2">
                          <RadioGroupItem value="horizontal" id="horizontal-restructure" />
                          <Label htmlFor="horizontal-restructure" className="cursor-pointer flex items-center gap-1"><Columns className="w-4 h-4"/>Horizontal</Label>
@@ -868,7 +1093,7 @@ export function PdfFusion() {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
                  <div className="space-y-3">
                      <Label className="text-base font-medium flex items-center gap-2"><ArrowLeftRight className="w-5 h-5 text-primary" /> Arrangement</Label>
-                     <RadioGroup defaultValue="horizontal" value={restructureMode} onValueChange={handleRestructureModeChange} className="flex space-x-4">
+                     <RadioGroup defaultValue="horizontal" value={restructureMode} onValueChange={handleRestructureModeChange} className="flex flex-wrap gap-4">
                        <div className="flex items-center space-x-2">
                          <RadioGroupItem value="horizontal" id="horizontal-mr" />
                          <Label htmlFor="horizontal-mr" className="cursor-pointer flex items-center gap-1"><Columns className="w-4 h-4"/>Horizontal</Label>
@@ -930,6 +1155,167 @@ export function PdfFusion() {
               ) : (
                 <>
                   <Layers className="mr-2 h-5 w-5" /> Merge & Restructure
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+
+      {/* Rotate Tab */}
+      <TabsContent value="rotate">
+        <Card className="shadow-lg border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center gap-2">
+                <RotateCw className="h-6 w-6" /> Rotate PDF
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Rotate all pages of your PDF file by 90 degrees clockwise.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+             <div className="flex flex-col items-center space-y-4">
+                <Button onClick={() => triggerFileInput('rotate')} variant="outline" size="lg" className="w-full md:w-auto border-dashed border-2 border-primary text-primary hover:bg-primary/10">
+                  <Upload className="mr-2 h-5 w-5" /> Select PDF to Rotate
+                </Button>
+                <Input
+                    ref={rotateInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => handleFileChange(e, 'rotate')}
+                    className="hidden"
+                    id="rotate-file-input"
+                />
+               <p className="text-sm text-muted-foreground">Or drag and drop a single file here</p>
+             </div>
+
+             {rotateFile && (
+               <div className="border rounded-md p-4 bg-card space-y-3">
+                 <h3 className="text-lg font-medium text-foreground">Selected File:</h3>
+                 <div className="flex items-center justify-between p-2 rounded-md border bg-background">
+                    <span className="text-sm font-medium text-foreground truncate mr-2">{rotateFile.name}</span>
+                    <Button variant="ghost" size="icon" onClick={() => removeFile('', 'rotate')} className="text-destructive hover:bg-destructive/10 h-7 w-7">
+                      <Trash2 className="h-4 w-4" />
+                       <span className="sr-only">Remove {rotateFile.name}</span>
+                    </Button>
+                  </div>
+               </div>
+             )}
+
+            {processingRotate && (
+               <div className="space-y-2">
+                    <Label className="text-sm font-medium text-primary">Processing...</Label>
+                   <Progress value={progressRotate} className="w-full h-3 [&>div]:bg-gradient-to-r [&>div]:from-accent [&>div]:to-primary" />
+                    <p className="text-xs text-muted-foreground text-right">{Math.round(progressRotate)}% complete</p>
+                </div>
+            )}
+
+          </CardContent>
+          <CardFooter>
+            <Button
+              onClick={handleRotate}
+              disabled={processingRotate || !rotateFile}
+              size="lg"
+              className="w-full bg-gradient-to-r from-accent to-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {processingRotate ? (
+                 <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                       </svg>
+                    Rotating...
+                 </>
+              ) : (
+                <>
+                  <RotateCw className="mr-2 h-5 w-5" /> Rotate All Pages
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+
+      {/* Extract Tab */}
+      <TabsContent value="extract">
+        <Card className="shadow-lg border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center gap-2">
+                <Scissors className="h-6 w-6" /> Extract Pages
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Create a new PDF containing only specific pages from your original file.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+             <div className="flex flex-col items-center space-y-4">
+                <Button onClick={() => triggerFileInput('extract')} variant="outline" size="lg" className="w-full md:w-auto border-dashed border-2 border-primary text-primary hover:bg-primary/10">
+                  <Upload className="mr-2 h-5 w-5" /> Select PDF to Extract From
+                </Button>
+                <Input
+                    ref={extractInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => handleFileChange(e, 'extract')}
+                    className="hidden"
+                    id="extract-file-input"
+                />
+               <p className="text-sm text-muted-foreground">Or drag and drop a single file here</p>
+             </div>
+
+             {extractFile && (
+               <div className="border rounded-md p-4 bg-card space-y-3">
+                 <h3 className="text-lg font-medium text-foreground">Selected File:</h3>
+                 <div className="flex items-center justify-between p-2 rounded-md border bg-background">
+                    <span className="text-sm font-medium text-foreground truncate mr-2">{extractFile.name}</span>
+                    <Button variant="ghost" size="icon" onClick={() => removeFile('', 'extract')} className="text-destructive hover:bg-destructive/10 h-7 w-7">
+                      <Trash2 className="h-4 w-4" />
+                       <span className="sr-only">Remove {extractFile.name}</span>
+                    </Button>
+                  </div>
+               </div>
+             )}
+
+             <div className="space-y-3">
+                 <Label htmlFor="extract-range" className="text-base font-medium">Page Range</Label>
+                 <Input
+                     id="extract-range"
+                     placeholder="e.g., 1-3, 5, 8-10"
+                     value={extractRange}
+                     onChange={(e) => setExtractRange(e.target.value)}
+                 />
+                 <p className="text-xs text-muted-foreground">
+                     Enter page numbers and/or ranges separated by commas.
+                 </p>
+             </div>
+
+            {processingExtract && (
+               <div className="space-y-2">
+                    <Label className="text-sm font-medium text-primary">Processing...</Label>
+                   <Progress value={progressExtract} className="w-full h-3 [&>div]:bg-gradient-to-r [&>div]:from-accent [&>div]:to-primary" />
+                    <p className="text-xs text-muted-foreground text-right">{Math.round(progressExtract)}% complete</p>
+                </div>
+            )}
+
+          </CardContent>
+          <CardFooter>
+            <Button
+              onClick={handleExtract}
+              disabled={processingExtract || !extractFile || !extractRange}
+              size="lg"
+              className="w-full bg-gradient-to-r from-accent to-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {processingExtract ? (
+                 <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                       </svg>
+                    Extracting...
+                 </>
+              ) : (
+                <>
+                  <Scissors className="mr-2 h-5 w-5" /> Extract Pages
                 </>
               )}
             </Button>
