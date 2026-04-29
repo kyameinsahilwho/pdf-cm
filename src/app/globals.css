@@ -2,80 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
 
 @layer base {
   :root {
-    --background: 207 100% 94%; /* Light Blue (#E3F2FD) */
-    --foreground: 200 20% 25%; /* Dark Gray/Blue */
-    --card: 0 0% 100%; /* White */
-    --card-foreground: 200 20% 25%; /* Dark Gray/Blue */
-    --popover: 0 0% 100%; /* White */
-    --popover-foreground: 200 20% 25%; /* Dark Gray/Blue */
-    --primary: 174 100% 29%; /* Teal (#009688) */
-    --primary-foreground: 0 0% 100%; /* White */
-    --secondary: 200 10% 90%; /* Lighter Gray/Blue */
-    --secondary-foreground: 174 100% 29%; /* Teal */
-    --muted: 200 15% 65%; /* Mid Gray/Blue (#607D8B area) */
-    --muted-foreground: 200 10% 45%; /* Slightly darker muted */
-    --accent: 174 100% 35%; /* Slightly lighter Teal */
-    --accent-foreground: 0 0% 100%; /* White */
-    --destructive: 0 84.2% 60.2%; /* Default Red */
-    --destructive-foreground: 0 0% 98%; /* Default White */
-    --border: 200 15% 85%; /* Light Gray/Blue border */
-    --input: 200 15% 88%; /* Slightly lighter input border/background */
-    --ring: 174 100% 29%; /* Teal */
-    --chart-1: 174 100% 29%;
-    --chart-2: 200 17% 46%;
-    --chart-3: 174 100% 40%;
-    --chart-4: 200 15% 65%;
-    --chart-5: 174 100% 50%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%; /* Keep sidebar default light */
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 174 100% 29%; /* Teal */
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 200 10% 90%; /* Lighter Gray/Blue */
-    --sidebar-accent-foreground: 174 100% 29%; /* Teal */
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 174 100% 29%; /* Teal */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 262 60% 45%; /* Toned down saturation */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 35%; /* Increased contrast */
+    --accent: 330 85% 50%; /* Darkened for better contrast */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 85%; /* Slightly darker border for contrast */
+    --input: 0 0% 85%;
+    --ring: 262 83% 45%;
+    --radius: 0.75rem;
+
+    --glow-purple: 262 83% 45%;
+    --glow-pink: 330 85% 50%;
+    --glow-blue: 217 91% 45%;
+    --glow-cyan: 189 94% 35%;
+    --glow-green: 142 76% 30%;
   }
+
   .dark {
-    /* Define a dark theme based on the light theme */
-    --background: 200 20% 10%; /* Dark Blue/Gray */
-    --foreground: 200 10% 90%; /* Light Gray/Blue */
-    --card: 200 20% 15%; /* Slightly Lighter Dark Blue/Gray */
-    --card-foreground: 200 10% 90%; /* Light Gray/Blue */
-    --popover: 200 20% 15%; /* Slightly Lighter Dark Blue/Gray */
-    --popover-foreground: 200 10% 90%; /* Light Gray/Blue */
-    --primary: 174 100% 40%; /* Lighter Teal */
-    --primary-foreground: 200 20% 10%; /* Dark Blue/Gray */
-    --secondary: 200 15% 25%; /* Mid Dark Gray/Blue */
-    --secondary-foreground: 174 100% 40%; /* Lighter Teal */
-    --muted: 200 15% 35%; /* Slightly Lighter Mid Dark Gray/Blue */
-    --muted-foreground: 200 10% 65%; /* Lighter Mid Gray/Blue */
-    --accent: 174 100% 45%; /* Even Lighter Teal */
-    --accent-foreground: 200 20% 10%; /* Dark Blue/Gray */
-    --destructive: 0 62.8% 50.6%; /* Brighter Red */
-    --destructive-foreground: 0 0% 98%; /* Default White */
-    --border: 200 15% 20%; /* Dark Gray/Blue border */
-    --input: 200 15% 22%; /* Slightly lighter input border/background */
-    --ring: 174 100% 40%; /* Lighter Teal */
-    --chart-1: 174 100% 40%;
-    --chart-2: 200 17% 66%;
-    --chart-3: 174 100% 50%;
-    --chart-4: 200 15% 85%;
-    --chart-5: 174 100% 60%;
-    --sidebar-background: 200 20% 15%; /* Sidebar dark */
-    --sidebar-foreground: 200 10% 90%;
-    --sidebar-primary: 174 100% 40%; /* Lighter Teal */
-    --sidebar-primary-foreground: 200 20% 10%;
-    --sidebar-accent: 200 15% 25%; /* Mid Dark Gray/Blue */
-    --sidebar-accent-foreground: 174 100% 40%; /* Lighter Teal */
-    --sidebar-border: 200 15% 20%;
-    --sidebar-ring: 174 100% 40%; /* Lighter Teal */
+    --background: 230 25% 8%;
+    --foreground: 220 15% 90%;
+    --card: 230 22% 12%;
+    --card-foreground: 220 15% 90%;
+    --popover: 230 22% 12%;
+    --popover-foreground: 220 15% 90%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 230 18% 18%;
+    --secondary-foreground: 220 15% 80%;
+    --muted: 230 15% 22%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 330 85% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 230 15% 18%;
+    --input: 230 15% 20%;
+    --ring: 262 83% 58%;
   }
 }
 
@@ -85,20 +62,172 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    /* Ensure smooth scrolling for drag-and-drop */
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 }
 
-/* Add custom styles for drag-and-drop visuals */
+/* ===== Custom Animations ===== */
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes drop-zone-pulse {
+  0%, 100% { transform: scale(1); border-color: hsl(var(--primary) / 0.3); }
+  50% { transform: scale(1.01); border-color: hsl(var(--primary) / 0.6); }
+}
+
 @layer components {
-  .drag-over {
-    @apply ring-2 ring-primary ring-offset-2;
+  /* Fun Card */
+  .tool-card {
+    @apply relative rounded-2xl p-6 cursor-pointer transition-all duration-300 ease-out;
+    background: hsl(var(--card));
+    border: 2px solid hsl(var(--border));
+    box-shadow: 4px 4px 0px hsl(var(--border));
   }
-  .dragging {
-    @apply opacity-50 scale-95 shadow-lg;
+
+  .tool-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px hsl(var(--primary) / 0.1);
+    border-color: hsl(var(--primary) / 0.5);
   }
-  .placeholder {
-    @apply bg-muted/50 border-2 border-dashed border-primary rounded-md;
+
+  .tool-card:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px hsl(var(--primary));
   }
+
+  /* Icon wrapper */
+  .tool-icon {
+    @apply w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300;
+    border: 2px solid transparent;
+  }
+
+  .animate-pop {
+    animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .tool-card:hover .tool-icon {
+    animation: wiggle 0.3s ease-in-out infinite;
+    @apply border-primary/20;
+  }
+
+  /* Drop zone */
+  .drop-zone {
+    @apply relative rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer;
+    border-color: hsl(var(--border));
+    background: hsl(var(--secondary));
+  }
+
+  .drop-zone:hover {
+    border-color: hsl(var(--primary));
+    background: hsl(var(--background));
+    transform: scale(1.01);
+  }
+
+  .drop-zone.drag-active {
+    border-color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.05);
+    animation: drop-zone-pulse 1s ease-in-out infinite;
+  }
+
+  /* Fun Button */
+  .btn-fun {
+    @apply relative font-bold text-white rounded-2xl px-6 py-4 transition-all duration-200 overflow-hidden active:scale-95;
+    background: hsl(var(--primary));
+    border-bottom: 4px solid hsl(var(--primary) / 0.7);
+  }
+
+  .btn-fun:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    border-bottom-width: 6px;
+  }
+
+  .btn-fun:active {
+    transform: translateY(2px);
+    border-bottom-width: 0px;
+  }
+
+  .btn-fun:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    border-bottom: 2px solid transparent;
+  }
+
+  /* Back button */
+  .btn-back {
+    @apply inline-flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-xl transition-all duration-200;
+    color: hsl(var(--foreground));
+    background: hsl(var(--secondary));
+    border: 2px solid hsl(var(--border));
+  }
+
+  .btn-back:hover {
+    background: hsl(var(--background));
+    border-color: hsl(var(--primary));
+    transform: translateX(-4px);
+  }
+
+  /* Fun Text */
+  .fun-title {
+    @apply font-black tracking-tight text-foreground;
+  }
+
+  /* File item */
+  .file-item {
+    @apply flex items-center gap-3 p-4 rounded-xl transition-all duration-200;
+    background: hsl(var(--card));
+    border: 2px solid hsl(var(--border));
+  }
+
+  .file-item:hover {
+    border-color: hsl(var(--primary) / 0.4);
+    transform: scale(1.02);
+  }
+
+  /* Progress bar */
+  .progress-fancy {
+    @apply w-full h-4 rounded-full overflow-hidden border-2 border-border p-0.5;
+    background: hsl(var(--secondary));
+  }
+
+  .progress-fancy > div {
+    @apply h-full rounded-full transition-all duration-300;
+    background: hsl(var(--primary));
+  }
+
+  /* Stagger */
+  .animate-stagger > * {
+    animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .animate-stagger > *:nth-child(1) { animation-delay: 0.05s; }
+  .animate-stagger > *:nth-child(2) { animation-delay: 0.1s; }
+  .animate-stagger > *:nth-child(3) { animation-delay: 0.15s; }
+  .animate-stagger > *:nth-child(4) { animation-delay: 0.2s; }
+  .animate-stagger > *:nth-child(5) { animation-delay: 0.25s; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+    border: 2px solid hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary)); }
 }

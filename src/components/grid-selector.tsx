@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
 
 interface GridSelectorProps {
   initialRows?: number;
@@ -23,13 +22,7 @@ export function GridSelector({
   const [selectedRows, setSelectedRows] = useState(initialRows);
   const [selectedCols, setSelectedCols] = useState(initialCols);
 
-  const handleMouseEnter = (r: number, c: number) => {
-    setHoveredRows(r);
-    setHoveredCols(c);
-  };
-
   const handleMouseLeave = () => {
-    // Reset hover to selected if not actively selecting
     setHoveredRows(selectedRows);
     setHoveredCols(selectedCols);
   };
@@ -42,41 +35,37 @@ export function GridSelector({
 
   return (
     <div
-      className="grid gap-1 p-2 border rounded-md bg-background cursor-pointer w-fit mx-auto md:mx-0"
+      className="inline-grid gap-1 p-2 rounded-xl bg-secondary/50 border border-border cursor-pointer"
       style={{
-        gridTemplateColumns: `repeat(${maxCols}, 1.5rem)`, // Adjust size as needed
-        gridTemplateRows: `repeat(${maxRows}, 1.5rem)`, // Adjust size as needed
+        gridTemplateColumns: `repeat(${maxCols}, 1.25rem)`,
+        gridTemplateRows: `repeat(${maxRows}, 1.25rem)`,
       }}
       onMouseLeave={handleMouseLeave}
     >
       {Array.from({ length: maxRows }).map((_, r) =>
         Array.from({ length: maxCols }).map((_, c) => {
-          const rowIndex = r + 1;
-          const colIndex = c + 1;
-          const isHovered = rowIndex <= hoveredRows && colIndex <= hoveredCols;
-          const isSelected = rowIndex <= selectedRows && colIndex <= selectedCols;
+          const ri = r + 1, ci = c + 1;
+          const isHovered = ri <= hoveredRows && ci <= hoveredCols;
+          const isSelected = ri <= selectedRows && ci <= selectedCols;
 
           return (
             <div
-              key={`${rowIndex}-${colIndex}`}
-              className={cn(
-                'w-full h-full border border-border transition-colors duration-100',
-                {
-                  'bg-primary/70 border-primary': isHovered,
-                  'bg-primary border-primary': isSelected,
-                   'bg-muted/50': !isHovered && !isSelected,
-                }
-              )}
-              onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)}
-              onClick={() => handleClick(rowIndex, colIndex)}
+              key={`${ri}-${ci}`}
+              className={`w-full h-full rounded-sm transition-all duration-100 ${
+                isSelected
+                  ? 'bg-primary border border-primary/60'
+                  : isHovered
+                  ? 'bg-primary/50 border border-primary/40'
+                  : 'bg-muted/30 border border-border/50'
+              }`}
+              onMouseEnter={() => { setHoveredRows(ri); setHoveredCols(ci); }}
+              onClick={() => handleClick(ri, ci)}
               role="button"
-              aria-label={`Select ${rowIndex} rows and ${colIndex} columns`}
-              tabIndex={0} // Make it focusable, though full keyboard nav isn't implemented here
-               onKeyDown={(e) => {
-                 if (e.key === 'Enter' || e.key === ' ') {
-                   handleClick(rowIndex, colIndex);
-                 }
-               }}
+              aria-label={`Select ${ri} rows and ${ci} columns`}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') handleClick(ri, ci);
+              }}
             />
           );
         })
