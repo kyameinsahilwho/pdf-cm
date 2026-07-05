@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -9,9 +9,16 @@ const inter = Inter({
   weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "PDFusion — Simple PDF Tools",
-  description: "Merge, restructure, rotate and extract PDF pages. Fast, free, and runs entirely in your browser.",
+  title: "PDFusion — Professional PDF Tools",
+  description: "Merge, restructure, rotate, extract PDF pages, and count words. Fast, free, and runs entirely in your browser.",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({
@@ -21,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}>
+      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased min-h-screen flex flex-col`}>
         {children}
         <Toaster />
       </body>
