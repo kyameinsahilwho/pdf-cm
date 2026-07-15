@@ -33,6 +33,7 @@
     --tool-extract:     162 72% 38%;
     --tool-combo:       30  90% 52%;
     --tool-words:       328 75% 52%;
+    --tool-copy:        280 85% 55%;
   }
 
   .dark {
@@ -183,6 +184,7 @@
   .tool-extract     { --t: var(--tool-extract); }
   .tool-combo       { --t: var(--tool-combo); }
   .tool-words       { --t: var(--tool-words); }
+  .tool-copy        { --t: var(--tool-copy); }
 
   /* ── DROP ZONE ── */
   .drop-zone {

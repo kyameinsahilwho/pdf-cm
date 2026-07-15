@@ -4,15 +4,16 @@ import { useState, useCallback } from 'react';
 import { 
   Merge, Grid, RotateCw, Scissors, Combine, Download, 
   ArrowLeftRight, Columns, Rows, FileText, ChevronRight,
-  Layers, FileCheck, ZapIcon
+  Layers, FileCheck, ZapIcon, Copy
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ToolView, DropZone, FileListDisplay, ActionButton, ProgressBar } from './tool-view';
 import { GridSelector } from './grid-selector';
 import { mergePdfs, restructurePdf, rotatePdf, extractPages, mergeAndRestructure, downloadPdf } from '@/lib/pdf-ops';
 import { WordCounter } from './word-counter';
+import { TextCopier } from './text-copier';
 
-type Tool = null | 'merge' | 'restructure' | 'merge-restructure' | 'rotate' | 'extract' | 'word-counter';
+type Tool = null | 'merge' | 'restructure' | 'merge-restructure' | 'rotate' | 'extract' | 'word-counter' | 'text-copier';
 
 interface PdfFile { id: string; file: File; name: string; }
 
@@ -76,6 +77,16 @@ const TOOLS = [
     bg: 'bg-rose-500',
     gradient: 'from-rose-500 to-pink-600',
     badge: 'All Formats',
+  },
+  {
+    id: 'text-copier' as const,
+    name: 'Text Copier',
+    desc: 'Extract document text and copy it sequentially in custom word chunks',
+    icon: <Copy className="w-7 h-7" />,
+    colorClass: 'tool-copy',
+    bg: 'bg-violet-600',
+    gradient: 'from-violet-600 to-indigo-600',
+    badge: 'Next-Next Copy',
   },
 ];
 
@@ -347,6 +358,11 @@ export function PdfFusion() {
   // ── Word Counter ───────────────────────────────────────────────────────────
   if (activeTool === 'word-counter') {
     return <WordCounter onBack={goBack} />;
+  }
+
+  // ── Text Copier ────────────────────────────────────────────────────────────
+  if (activeTool === 'text-copier') {
+    return <TextCopier onBack={goBack} />;
   }
 
   return null;
