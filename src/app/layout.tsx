@@ -16,8 +16,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "PDFusion — Professional PDF Tools",
-  description: "Merge, restructure, rotate, extract PDF pages, and count words. Fast, free, and runs entirely in your browser.",
+  title: "Love for PDF — Every PDF tool you love, 100% free & secure",
+  description: "Merge, Split, Compress, Convert, Edit, Sign, Watermark, OCR, AI Summarize, and Automate PDF workflows right inside your browser.",
   icons: { icon: "/favicon.svg" },
 };
 

@@ -18,8 +18,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Only treat .tsx, .ts, .jsx, .js files as pages — prevent icon.svg being treated as a route
-  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
 };
 
 export default nextConfig;
