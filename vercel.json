@@ -4,22 +4,9 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "functions": {
-    "api/pdf-to-word.py":    { "runtime": "python3.12", "maxDuration": 60 },
-    "api/pdf-to-excel.py":   { "runtime": "python3.12", "maxDuration": 60 },
-    "api/pdf-to-ppt.py":     { "runtime": "python3.12", "maxDuration": 60 },
-    "api/pdf-to-markdown.py":{ "runtime": "python3.12", "maxDuration": 60 },
-    "api/pdf-to-pdf-a.py":   { "runtime": "python3.12", "maxDuration": 60 },
-    "api/word-to-pdf.py":    { "runtime": "python3.12", "maxDuration": 60 },
-    "api/ppt-to-pdf.py":     { "runtime": "python3.12", "maxDuration": 60 },
-    "api/excel-to-pdf.py":   { "runtime": "python3.12", "maxDuration": 60 },
-    "api/compress-pdf.py":   { "runtime": "python3.12", "maxDuration": 30 },
-    "api/protect-pdf.py":    { "runtime": "python3.12", "maxDuration": 30 },
-    "api/unlock-pdf.py":     { "runtime": "python3.12", "maxDuration": 30 },
-    "api/edit-pdf.py":       { "runtime": "python3.12", "maxDuration": 30 },
-    "api/repair-pdf.py":     { "runtime": "python3.12", "maxDuration": 30 },
-    "api/html-to-pdf.py":    { "runtime": "python3.12", "maxDuration": 30 },
-    "api/inspect-pdf.py":    { "runtime": "python3.12", "maxDuration": 30 },
-    "api/ocr-pdf.py":        { "runtime": "python3.12", "maxDuration": 60 },
-    "api/redact-pdf.py":     { "runtime": "python3.12", "maxDuration": 30 }
+    "api/*.py": {
+      "runtime": "vercel-python@3.1.0",
+      "maxDuration": 60
+    }
   }
 }
