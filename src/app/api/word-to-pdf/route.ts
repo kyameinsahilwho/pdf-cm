@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execFile } from 'child_process';
-import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
-
-const execFileAsync = promisify(execFile);
+import { runPythonScript } from '@/lib/server-python-runner';
 
 export async function POST(req: NextRequest) {
   let tmpInPath = '';
@@ -31,21 +28,7 @@ export async function POST(req: NextRequest) {
 
     const scriptPath = path.join(process.cwd(), 'api', 'convert-word-to-pdf.py');
 
-    // Execute Python script
-    const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
-    
-    try {
-      await execFileAsync(pythonExecutable, [scriptPath, tmpInPath, tmpOutPath], {
-        timeout: 60000,
-        maxBuffer: 1024 * 1024 * 10,
-      });
-    } catch (execErr: any) {
-      console.error('[word-to-pdf API] Python process execution error:', execErr);
-      return NextResponse.json(
-        { error: 'Python conversion process failed', details: execErr?.stderr || execErr?.message },
-        { status: 500 }
-      );
-    }
+    await runPythonScript(scriptPath, [tmpInPath, tmpOutPath], { timeout: 120000 });
 
     const pdfBuffer = await fs.readFile(tmpOutPath);
     const originalName = file.name.replace(/\.[^/.]+$/, '');
@@ -58,14 +41,10 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err: any) {
-    console.error('[word-to-pdf API] Error handling request:', err);
+    console.error('[word-to-pdf API] Error:', err);
     return NextResponse.json({ error: err?.message || 'Server error converting document' }, { status: 500 });
   } finally {
-    if (tmpInPath) {
-      await fs.unlink(tmpInPath).catch(() => {});
-    }
-    if (tmpOutPath) {
-      await fs.unlink(tmpOutPath).catch(() => {});
-    }
+    if (tmpInPath) await fs.unlink(tmpInPath).catch(() => {});
+    if (tmpOutPath) await fs.unlink(tmpOutPath).catch(() => {});
   }
 }

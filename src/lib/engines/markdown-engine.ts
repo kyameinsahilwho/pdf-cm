@@ -15,102 +15,22 @@ export async function pdfToMarkdown(
 ): Promise<string> {
   if (onProgress) onProgress(10);
 
-  try {
-    const formData = new FormData();
-    if (file instanceof File) {
-      formData.append('file', file);
-    } else {
-      formData.append('file', new Blob([file], { type: 'application/pdf' }), 'document.pdf');
-    }
-
-    const res = await fetch('/api/pdf-to-markdown', { method: 'POST', body: formData });
-    if (res.ok) {
-      if (onProgress) onProgress(100);
-      const text = await res.text();
-      return text;
-    }
-  } catch (err) {
-    console.warn('[pdfToMarkdown] Python API unreachable, using client fallback:', err);
+  const formData = new FormData();
+  if (file instanceof File) {
+    formData.append('file', file);
+  } else {
+    formData.append('file', new Blob([file], { type: 'application/pdf' }), 'document.pdf');
   }
 
-  const buf = file instanceof ArrayBuffer ? file : await file.arrayBuffer();
-  const pdf = await getDocumentProxy(new Uint8Array(buf));
-  const numPages = pdf.numPages;
-
-  let fullMarkdown = `# ${file instanceof File ? file.name.replace(/\.[^/.]+$/, '') : 'Extracted Document'}\n\n`;
-
-  for (let i = 1; i <= numPages; i++) {
-    if (onProgress) onProgress(15 + Math.floor((i / numPages) * 75));
-
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-
-    fullMarkdown += `\n<!-- Page ${i} -->\n`;
-    if (numPages > 1) {
-      fullMarkdown += `\n## Page ${i}\n\n`;
-    }
-
-    if (!textContent.items || textContent.items.length === 0) {
-      fullMarkdown += `*(No extractable text found on page ${i})*\n\n`;
-      continue;
-    }
-
-    // Group items by line based on Y position (rounded)
-    const linesMap = new Map<number, Array<{ str: string; x: number; height: number }>>();
-
-    for (const item of textContent.items as any[]) {
-      if (!item.str || item.str.trim().length === 0) continue;
-
-      const y = Math.round((item.transform ? item.transform[5] : 0) / 4) * 4;
-      const x = item.transform ? item.transform[4] : 0;
-      const height = item.height || 10;
-
-      if (!linesMap.has(y)) {
-        linesMap.set(y, []);
-      }
-      linesMap.get(y)!.push({ str: item.str, x, height });
-    }
-
-    // Sort Y lines descending (top of page to bottom)
-    const sortedY = Array.from(linesMap.keys()).sort((a, b) => b - a);
-
-    let inList = false;
-
-    for (const y of sortedY) {
-      const items = linesMap.get(y)!;
-      // Sort items left-to-right by X position
-      items.sort((a, b) => a.x - b.x);
-
-      const lineText = items.map((it) => it.str).join(' ').trim();
-      if (!lineText) continue;
-
-      const avgHeight = items.reduce((acc, curr) => acc + curr.height, 0) / items.length;
-
-      // Heuristic for Heading vs Paragraph vs List
-      if (avgHeight >= 16 && lineText.length < 80) {
-        fullMarkdown += `\n# ${lineText}\n\n`;
-        inList = false;
-      } else if (avgHeight >= 13 && lineText.length < 100) {
-        fullMarkdown += `\n### ${lineText}\n\n`;
-        inList = false;
-      } else if (/^[\bullet\-\*•]\s+/.test(lineText) || /^\d+[\.\)]\s+/.test(lineText)) {
-        fullMarkdown += `${lineText}\n`;
-        inList = true;
-      } else if (/^[A-Z0-9\s]{4,60}$/.test(lineText) && lineText.length < 60) {
-        fullMarkdown += `\n#### ${lineText}\n\n`;
-        inList = false;
-      } else {
-        if (inList) {
-          fullMarkdown += '\n';
-          inList = false;
-        }
-        fullMarkdown += `${lineText}\n\n`;
-      }
-    }
+  const res = await fetch('/api/pdf-to-markdown', { method: 'POST', body: formData });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || errData.details || `PDF to Markdown conversion failed with status ${res.status}`);
   }
 
   if (onProgress) onProgress(100);
-  return fullMarkdown.trim();
+  const text = await res.text();
+  return text;
 }
 
 /**

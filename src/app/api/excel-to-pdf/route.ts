@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execFile } from 'child_process';
-import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
-
-const execFileAsync = promisify(execFile);
+import { runPythonScript } from '@/lib/server-python-runner';
 
 export async function POST(req: NextRequest) {
   let tmpInPath = '';
@@ -31,12 +28,8 @@ export async function POST(req: NextRequest) {
     await fs.writeFile(tmpInPath, buffer);
 
     const scriptPath = path.join(process.cwd(), 'api', 'convert-office-pdf.py');
-    const pythonExec = process.platform === 'win32' ? 'python' : 'python3';
 
-    await execFileAsync(pythonExec, [scriptPath, 'excel-to-pdf', tmpInPath, tmpOutPath], {
-      timeout: 120000,
-      maxBuffer: 1024 * 1024 * 20,
-    });
+    await runPythonScript(scriptPath, ['excel-to-pdf', tmpInPath, tmpOutPath], { timeout: 120000 });
 
     const pdfBuffer = await fs.readFile(tmpOutPath);
     const originalName = file.name.replace(/\.[^/.]+$/, '');

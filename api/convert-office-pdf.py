@@ -1031,6 +1031,12 @@ def main():
         convert_ppt_to_pdf(inp, outp)
     elif mode == 'excel-to-pdf':
         convert_excel_to_pdf(inp, outp)
+    elif mode == 'word-to-pdf':
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("convert_word_to_pdf_mod", os.path.join(os.path.dirname(__file__), "convert-word-to-pdf.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        mod.convert_word_to_pdf(inp, outp)
     elif mode == 'pdf-to-markdown':
         convert_pdf_to_markdown(inp, outp)
     elif mode == 'html-to-pdf':
@@ -1056,6 +1062,70 @@ def main():
     else:
         print(f"Unknown conversion mode: {mode}")
         sys.exit(1)
+
+from http.server import BaseHTTPRequestHandler
+import json
+import urllib.parse
+
+class ServerlessHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length)
+            
+            mode = self.headers.get('X-Conversion-Mode', 'pdf-to-word')
+            
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".bin") as tmp_in:
+                tmp_in.write(body)
+                tmp_in_path = tmp_in.name
+
+            tmp_out_path = tmp_in_path + ".out"
+
+            try:
+                if mode == 'pdf-to-word':
+                    convert_pdf_to_word(tmp_in_path, tmp_out_path)
+                elif mode == 'pdf-to-excel':
+                    convert_pdf_to_excel(tmp_in_path, tmp_out_path)
+                elif mode == 'pdf-to-ppt':
+                    convert_pdf_to_ppt(tmp_in_path, tmp_out_path)
+                elif mode == 'ppt-to-pdf':
+                    convert_ppt_to_pdf(tmp_in_path, tmp_out_path)
+                elif mode == 'excel-to-pdf':
+                    convert_excel_to_pdf(tmp_in_path, tmp_out_path)
+                elif mode == 'pdf-to-markdown':
+                    convert_pdf_to_markdown(tmp_in_path, tmp_out_path)
+                else:
+                    convert_pdf_to_word(tmp_in_path, tmp_out_path)
+
+                with open(tmp_out_path, "rb") as f_out:
+                    out_bytes = f_out.read()
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/octet-stream')
+                self.send_header('Content-Length', str(len(out_bytes)))
+                self.end_headers()
+                self.wfile.write(out_bytes)
+
+            finally:
+                if os.path.exists(tmp_in_path):
+                    os.remove(tmp_in_path)
+                if os.path.exists(tmp_out_path):
+                    os.remove(tmp_out_path)
+
+        except Exception as err:
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            err_msg = json.dumps({"error": str(err)})
+            self.wfile.write(err_msg.encode('utf-8'))
+
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(b'{"status": "ready", "service": "PDF Engine Python Vercel Serverless Function"}')
+
+handler = ServerlessHandler
 
 if __name__ == '__main__':
     main()

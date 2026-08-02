@@ -1,12 +1,20 @@
-python-docx>=1.1.0
-docx2pdf>=0.1.8
-Pillow>=10.0.0
-reportlab>=4.0.0
+# Core PDF manipulation (Vercel-compatible — pure Python wheels)
+pymupdf>=1.23.0
 pdf2docx>=0.5.8
 pdfplumber>=0.10.3
-openpyxl>=3.1.2
-python-pptx>=0.6.23
-xhtml2pdf>=0.2.15
 pypdf>=3.17.0
-pytesseract>=0.3.10
-pdf2image>=1.17.0
+
+# Office format conversion (pure Python, Vercel-compatible)
+python-docx>=1.1.0
+python-pptx>=0.6.23
+openpyxl>=3.1.2
+
+# PDF rendering / generation (pure Python, Vercel-compatible)
+reportlab>=4.0.0
+xhtml2pdf>=0.2.15
+Pillow>=10.0.0
+
+# ── LOCAL / SELF-HOSTED ONLY (require system binaries, NOT available on Vercel) ──
+# docx2pdf>=0.1.8     # requires MS Word or LibreOffice — local dev only
+# pytesseract>=0.3.10 # requires tesseract binary       — local dev only
+# pdf2image>=1.17.0   # requires poppler binary         — local dev only

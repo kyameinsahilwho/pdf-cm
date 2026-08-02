@@ -1,0 +1,14 @@
+# Don't bundle development / test artifacts into Vercel deployments
+node_modules
+.next
+.git
+tests/
+docs/
+*.log
+*.test.*
+scratch/
+
+# These test output files aren't needed
+test_out.*
+test_sample.*
+test_ppt_out.*

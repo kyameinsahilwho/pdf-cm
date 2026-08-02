@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execFile } from 'child_process';
-import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
-
-const execFileAsync = promisify(execFile);
+import { runPythonScript } from '@/lib/server-python-runner';
 
 export async function POST(req: NextRequest) {
   let tmpInPath = '';
@@ -30,21 +27,15 @@ export async function POST(req: NextRequest) {
     await fs.writeFile(tmpInPath, buffer);
 
     const scriptPath = path.join(process.cwd(), 'api', 'convert-office-pdf.py');
-    const pythonExec = process.platform === 'win32' ? 'python' : 'python3';
 
-    await execFileAsync(pythonExec, [scriptPath, 'pdf-to-markdown', tmpInPath, tmpOutPath], {
-      timeout: 120000,
-      maxBuffer: 1024 * 1024 * 20,
-    });
+    await runPythonScript(scriptPath, ['pdf-to-markdown', tmpInPath, tmpOutPath], { timeout: 120000 });
 
-    const mdBuffer = await fs.readFile(tmpOutPath);
-    const originalName = file.name.replace(/\.[^/.]+$/, '');
+    const mdContent = await fs.readFile(tmpOutPath, 'utf-8');
 
-    return new NextResponse(mdBuffer, {
+    return new NextResponse(mdContent, {
       status: 200,
       headers: {
         'Content-Type': 'text/markdown; charset=utf-8',
-        'Content-Disposition': `attachment; filename="${encodeURIComponent(originalName)}.md"`,
       },
     });
   } catch (err: any) {

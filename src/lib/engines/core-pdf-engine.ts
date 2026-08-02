@@ -787,3 +787,24 @@ export async function executeWorkflow(
   onProgress?.(100);
   return currentBytes;
 }
+
+/* 21. OCR PDF */
+export async function ocrPdf(
+  file: File,
+  onProgress?: (p: number) => void
+): Promise<Uint8Array> {
+  onProgress?.(20);
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch('/api/ocr-pdf', { method: 'POST', body: formData });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || errData.details || `OCR PDF failed with status ${res.status}`);
+  }
+
+  onProgress?.(100);
+  const arrayBuf = await res.arrayBuffer();
+  return new Uint8Array(arrayBuf);
+}
