@@ -5,14 +5,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 ENV MAX_FILE_SIZE_MB=50
-ENV CONVERSION_TIMEOUT_SECONDS=45
+ENV CONVERSION_TIMEOUT_SECONDS=60
 
-# Install system dependencies, LibreOffice headless, font utilities, and typography fonts
+# Install LibreOffice headless (Writer, Calc, Impress), font packages, and font utilities
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libreoffice \
     libreoffice-writer \
+    libreoffice-calc \
+    libreoffice-impress \
     fonts-liberation \
+    fonts-dejavu \
     fonts-dejavu-core \
+    fonts-noto \
     fonts-noto-core \
     fonts-freefont-ttf \
     fontconfig \
