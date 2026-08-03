@@ -4,7 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   Type, Edit3, Square, Download, Trash2, Check, RefreshCw, Crosshair,
   Image as ImageIcon, ZoomIn, ZoomOut, Maximize2, X, ChevronLeft, ChevronRight,
-  Eye, MousePointer, Layers
+  Eye, MousePointer, Layers, Bold, Italic, Sparkles, Plus, Undo2, Sliders,
+  Move, CornerDownLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { downloadBytes } from '@/lib/pdf-engine';
@@ -25,8 +26,6 @@ export interface EditAnnotation {
   font?: string;
   isBold?: boolean;
   isItalic?: boolean;
-  isSuper?: boolean;
-  style?: string;
   points?: Array<{ x: number; y: number }>;
   imgData?: string;
 }
@@ -42,10 +41,8 @@ interface DetectedSpan {
   font: string;
   size: number;
   color: string;
-  style?: string;
   isBold?: boolean;
   isItalic?: boolean;
-  isSuper?: boolean;
 }
 
 interface DetectedImage {
@@ -64,16 +61,25 @@ interface PdfEditorPanelProps {
 
 export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
   const { toast } = useToast();
+
+  // Studio Mode: 'inspect' (Select & Edit Text/Images), 'text' (Add Text), 'pen' (Draw), 'image' (Stamp Image)
   const [activeTool, setActiveTool] = useState<'inspect' | 'text' | 'pen' | 'image'>('inspect');
+  
+  // Active Inspector Formatting Controls
   const [selectedColor, setSelectedColor] = useState('#f43f5e');
-  const [fontSize, setFontSize] = useState(16);
+  const [fontSize, setFontSize] = useState(14);
+  const [selectedFont, setSelectedFont] = useState('Helvetica');
+  const [isBold, setIsBold] = useState(false);
+  const [isItalic, setIsItalic] = useState(false);
+
+  // Navigation & Zoom State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [zoomLevel, setZoomLevel] = useState(1.3);
   const [annotations, setAnnotations] = useState<EditAnnotation[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Native PDF Page Dimensions & Canvas Dimensions for 100% Exact Bounding Box Alignment
+  // Dimensions for pixel-perfect bounding box alignment
   const [pdfDimensions, setPdfDimensions] = useState<{ width: number; height: number }>({ width: 612, height: 792 });
   const [canvasDimensions, setCanvasDimensions] = useState<{ width: number; height: number }>({ width: 795, height: 1030 });
 
@@ -85,6 +91,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
   const [overlappingLayers, setOverlappingLayers] = useState<Array<{ type: 'span' | 'image'; data: any }> | null>(null);
   const [layerPopupPos, setLayerPopupPos] = useState<{ x: number; y: number } | null>(null);
 
+  // Text Addition & Pen Drawing State
   const [textInput, setTextInput] = useState('');
   const [textPosition, setTextPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -94,7 +101,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Render PDF Page with dynamic zoom level
+  // Render PDF Page via unpdf / PDF.js proxy
   useEffect(() => {
     let active = true;
     async function renderPage() {
@@ -128,7 +135,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
     return () => { active = false; };
   }, [file, currentPage, zoomLevel]);
 
-  // Inspect page text & image elements via Python PyMuPDF backend API
+  // Inspect page text & image elements via PyMuPDF backend API
   useEffect(() => {
     let active = true;
     async function fetchElements() {
@@ -162,18 +169,21 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
   const scaleY = pdfDimensions.height > 0 ? canvasDimensions.height / pdfDimensions.height : 1;
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (overlappingLayers) {
+      setOverlappingLayers(null);
+      return;
+    }
+
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
     if (activeTool === 'text') {
-      const pdfX = clickX / scaleX;
-      const pdfY = clickY / scaleY;
       setTextPosition({ x: clickX, y: clickY });
       setTextInput('');
     } else if (activeTool === 'inspect') {
-      // Find all overlapping text spans and images at click location
+      // Find matching text spans & images at click location
       const matchingSpans = detectedSpans.filter((span) => {
         const x = span.x * scaleX;
         const y = span.y * scaleY;
@@ -215,8 +225,11 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
     e.stopPropagation();
     setEditingSpan(span);
     setTextInput(span.text);
-    setFontSize(span.size);
-    setSelectedColor(span.color);
+    setFontSize(Math.round((span.size || 12) * 10) / 10);
+    setSelectedColor(span.color || '#f43f5e');
+    setSelectedFont(span.font || 'Helvetica');
+    setIsBold(!!span.isBold);
+    setIsItalic(!!span.isItalic);
   };
 
   const handleApplyInPlaceTextEdit = () => {
@@ -226,19 +239,22 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
       type: 'replace_text',
       page: currentPage,
       bbox: editingSpan.bbox,
-      text: textInput.trim(),
+      text: textInput,
       fontSize,
       color: selectedColor,
-      font: editingSpan.font,
-      isBold: editingSpan.isBold,
-      isItalic: editingSpan.isItalic,
-      isSuper: editingSpan.isSuper,
-      style: editingSpan.style,
+      font: selectedFont || editingSpan.font,
+      isBold,
+      isItalic,
     };
-    setAnnotations((prev) => [...prev, newAnno]);
+
+    // Filter out existing edits for this exact bounding box to update in place
+    setAnnotations((prev) => [
+      ...prev.filter((a) => !(a.type === 'replace_text' && a.bbox && a.bbox.join(',') === editingSpan.bbox.join(','))),
+      newAnno
+    ]);
     setEditingSpan(null);
     setTextInput('');
-    toast({ title: 'Text Edit Queued ✏️', description: `Replacing "${editingSpan.text}" with "${textInput}" (${editingSpan.font} ${editingSpan.style || ''})` });
+    toast({ title: 'Text Edit Applied ✨', description: `Updated text preview with ${selectedFont} ${fontSize}pt` });
   };
 
   const handleRemoveImage = (img: DetectedImage, e: React.MouseEvent) => {
@@ -250,7 +266,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
       bbox: img.bbox,
     };
     setAnnotations((prev) => [...prev, newAnno]);
-    toast({ title: 'Image Removal Queued 🗑️', description: 'Selected image object will be removed.' });
+    toast({ title: 'Image Removal Queued 🗑️', description: 'Selected image area masked for removal.' });
   };
 
   const handleAddImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -271,7 +287,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
           imgData: dataUrl,
         };
         setAnnotations((prev) => [...prev, newAnno]);
-        toast({ title: 'Image Stamp Added 🖼️', description: 'Placed new image on current page.' });
+        toast({ title: 'Image Stamp Added 🖼️', description: 'Placed image on page canvas.' });
       }
     };
     reader.readAsDataURL(imgFile);
@@ -290,6 +306,9 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
       text: textInput.trim(),
       fontSize,
       color: selectedColor,
+      font: selectedFont,
+      isBold,
+      isItalic,
     };
     setAnnotations((prev) => [...prev, newAnno]);
     setTextPosition(null);
@@ -332,6 +351,10 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
     setCurrentPenPoints([]);
   };
 
+  const removeAnnotation = (id: string) => {
+    setAnnotations(annotations.filter((a) => a.id !== id));
+  };
+
   const handleSaveEditedPdf = async () => {
     setIsProcessing(true);
     try {
@@ -344,7 +367,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
         const arrayBuf = await res.arrayBuffer();
         const bytes = new Uint8Array(arrayBuf);
         downloadBytes(bytes, `edited-${file.name}`);
-        toast({ title: 'PDF Saved! ✍️', description: 'Applied high-fidelity PyMuPDF edits.' });
+        toast({ title: 'PDF Saved Successfully! ✍️', description: 'Applied high-fidelity PyMuPDF edits.' });
       } else {
         throw new Error('Server edit process failed');
       }
@@ -355,121 +378,122 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
     }
   };
 
+  // Helper font family styling for live canvas preview
+  const getCssFontFamily = (f: string = '') => {
+    const fn = f.toLowerCase();
+    if (fn.includes('times') || fn.includes('georgia') || fn.includes('serif')) return 'Georgia, "Times New Roman", serif';
+    if (fn.includes('courier') || fn.includes('mono') || fn.includes('code')) return '"Courier New", Courier, monospace';
+    return 'Arial, Helvetica, sans-serif';
+  };
+
   return (
     <div className="fixed inset-0 z-[999] flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
-      {/* Studio Header Bar */}
+      {/* ── STUDIO TOP HEADER BAR ── */}
       <div className="flex items-center justify-between px-6 py-3 bg-slate-900 border-b border-slate-800 shadow-xl shrink-0">
         <div className="flex items-center gap-4">
           <button
             onClick={onClose}
-            className="flex items-center gap-1.5 text-slate-400 hover:text-white px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm font-medium transition"
+            className="flex items-center gap-1.5 text-slate-400 hover:text-white px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold transition"
           >
             <X className="w-4 h-4" /> Exit Studio
           </button>
           <div className="h-5 w-px bg-slate-800" />
-          <h2 className="text-base font-bold text-white truncate max-w-md">
+          <h2 className="text-sm font-bold text-white truncate max-w-xs sm:max-w-md">
             {file.name}
           </h2>
         </div>
 
         {/* Center Page Nav & Zoom Controls */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-lg border border-slate-700">
+          <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700">
             <button
               disabled={currentPage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="p-1.5 text-slate-300 hover:text-white disabled:opacity-40"
+              className="p-1.5 text-slate-400 hover:text-white disabled:opacity-30 rounded-lg hover:bg-slate-700 transition"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-xs font-semibold px-2 text-slate-200">
-              Page {currentPage} of {totalPages}
+            <span className="text-xs font-bold text-slate-300 px-2 min-w-[70px] text-center">
+              {currentPage} / {totalPages}
             </span>
             <button
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="p-1.5 text-slate-300 hover:text-white disabled:opacity-40"
+              className="p-1.5 text-slate-400 hover:text-white disabled:opacity-30 rounded-lg hover:bg-slate-700 transition"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-lg border border-slate-700">
+          <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700">
             <button
-              onClick={() => setZoomLevel((z) => Math.max(0.6, z - 0.2))}
-              className="p-1.5 text-slate-300 hover:text-white"
+              onClick={() => setZoomLevel((z) => Math.max(0.8, z - 0.15))}
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-700 transition"
               title="Zoom Out"
             >
               <ZoomOut className="w-4 h-4" />
             </button>
-            <span className="text-xs font-semibold px-2 text-slate-200 min-w-[50px] text-center">
-              {Math.round(zoomLevel * 100)}%
-            </span>
+            <span className="text-xs font-bold text-slate-300 px-2">{Math.round(zoomLevel * 100)}%</span>
             <button
-              onClick={() => setZoomLevel((z) => Math.min(2.5, z + 0.2))}
-              className="p-1.5 text-slate-300 hover:text-white"
+              onClick={() => setZoomLevel((z) => Math.min(2.5, z + 0.15))}
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-700 transition"
               title="Zoom In"
             >
               <ZoomIn className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => setZoomLevel(1.3)}
-              className="p-1.5 text-slate-400 hover:text-white text-xs px-2 font-mono"
-            >
-              Reset
-            </button>
           </div>
         </div>
 
-        {/* Right Export Button */}
+        {/* Save & Download Action Button */}
         <button
           onClick={handleSaveEditedPdf}
-          disabled={isProcessing}
-          className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white px-5 py-2 rounded-xl font-bold text-sm shadow-xl transition transform hover:scale-[1.02]"
+          disabled={isProcessing || annotations.length === 0}
+          className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-rose-600/30 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-          Save & Export PDF
+          <Download className="w-4 h-4" />
+          {isProcessing ? 'Saving Edits...' : `Save & Download (${annotations.length})`}
         </button>
       </div>
 
-      {/* Floating Tool Controls Bar */}
-      <div className="flex items-center justify-between px-6 py-2.5 bg-slate-900/90 backdrop-blur border-b border-slate-800/80 shrink-0 flex-wrap gap-4">
-        <div className="flex items-center gap-2">
+      {/* ── TOOLBAR: INTERACTIVE FORMATTING CONTROLS ── */}
+      <div className="flex items-center justify-between px-6 py-2.5 bg-slate-900/90 border-b border-slate-800 shrink-0 flex-wrap gap-4">
+        {/* Tool Mode Picker */}
+        <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-2xl border border-slate-800">
           <button
             onClick={() => setActiveTool('inspect')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
               activeTool === 'inspect'
-                ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30'
-                : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800'
+                ? 'bg-rose-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Crosshair className="w-4 h-4" /> Detect Text & Images
+            <MousePointer className="w-3.5 h-3.5" /> Select & Edit
           </button>
           <button
             onClick={() => setActiveTool('text')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
               activeTool === 'text'
-                ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30'
-                : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800'
+                ? 'bg-rose-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Type className="w-4 h-4" /> Add Text
+            <Type className="w-3.5 h-3.5" /> Add Text
           </button>
           <button
             onClick={() => setActiveTool('pen')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
               activeTool === 'pen'
-                ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30'
-                : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800'
+                ? 'bg-rose-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Edit3 className="w-4 h-4" /> Draw Pen
+            <Edit3 className="w-3.5 h-3.5" /> Draw Pen
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold transition"
+            className="flex items-center gap-2 px-3.5 py-1.5 text-slate-400 hover:text-white rounded-xl text-xs font-bold transition"
           >
-            <ImageIcon className="w-4 h-4" /> Add Image
+            <ImageIcon className="w-3.5 h-3.5" /> Add Image
           </button>
           <input
             ref={fileInputRef}
@@ -480,38 +504,91 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
           />
         </div>
 
-        {/* Colors & Fonts */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 bg-slate-800/80 p-1.5 rounded-xl border border-slate-700">
-            {['#f43f5e', '#2563eb', '#10b981', '#f59e0b', '#1f2937', '#ffffff'].map((c) => (
+        {/* Live Font & Color Formatting Palette */}
+        <div className="flex items-center gap-3">
+          {/* Color Palette Swatches */}
+          <div className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+            {['#f43f5e', '#2563eb', '#10b981', '#f59e0b', '#000000', '#ffffff'].map((c) => (
               <button
                 key={c}
                 onClick={() => setSelectedColor(c)}
-                className={`w-6 h-6 rounded-full border-2 transition ${
+                className={`w-5 h-5 rounded-full border-2 transition ${
                   selectedColor === c ? 'border-white scale-110 shadow-md' : 'border-transparent opacity-80 hover:opacity-100'
                 }`}
                 style={{ backgroundColor: c }}
               />
             ))}
+            <input
+              type="color"
+              value={selectedColor}
+              onChange={(e) => setSelectedColor(e.target.value)}
+              className="w-5 h-5 rounded-full bg-transparent border-0 cursor-pointer p-0"
+              title="Custom Color"
+            />
           </div>
 
+          {/* Font Family Select */}
+          <select
+            value={selectedFont}
+            onChange={(e) => setSelectedFont(e.target.value)}
+            className="bg-slate-950 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-800 focus:outline-none focus:border-rose-500"
+            title="Font Family"
+          >
+            <option value="Helvetica">Sans-Serif (Helvetica / Arial)</option>
+            <option value="Times">Serif (Times / Georgia / Garamond)</option>
+            <option value="Courier">Monospace (Courier / Consolas)</option>
+          </select>
+
+          {/* Font Size Select */}
           <select
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
-            className="bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-xl border border-slate-700 focus:outline-none"
+            className="bg-slate-950 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-800 focus:outline-none focus:border-rose-500"
           >
+            {![8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48].includes(Math.round(fontSize)) && (
+              <option value={fontSize}>{Math.round(fontSize * 10) / 10}pt (Original)</option>
+            )}
+            <option value={8}>8pt</option>
+            <option value={9}>9pt</option>
             <option value={10}>10pt</option>
+            <option value={11}>11pt</option>
             <option value={12}>12pt</option>
             <option value={14}>14pt</option>
             <option value={16}>16pt</option>
+            <option value={18}>18pt</option>
             <option value={20}>20pt</option>
             <option value={24}>24pt</option>
+            <option value={28}>28pt</option>
             <option value={32}>32pt</option>
+            <option value={36}>36pt</option>
+            <option value={48}>48pt</option>
           </select>
+
+          {/* Bold & Italic Style Toggles */}
+          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800">
+            <button
+              onClick={() => setIsBold(!isBold)}
+              className={`p-1.5 rounded-lg text-xs transition ${
+                isBold ? 'bg-rose-600 text-white font-black' : 'text-slate-400 hover:text-white'
+              }`}
+              title="Bold"
+            >
+              <Bold className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setIsItalic(!isItalic)}
+              className={`p-1.5 rounded-lg text-xs transition ${
+                isItalic ? 'bg-rose-600 text-white italic' : 'text-slate-400 hover:text-white'
+              }`}
+              title="Italic"
+            >
+              <Italic className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Main Studio Workspace: Sidebar Thumbnails + Center Scrollable Canvas */}
+      {/* ── MAIN WORKSPACE: SIDEBAR PAGES + CENTER CANVAS + RIGHT INSPECTOR ── */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Thumbnails Sidebar */}
         <div className="w-48 bg-slate-900 border-r border-slate-800 p-4 overflow-y-auto hidden md:flex flex-col gap-3 shrink-0">
@@ -534,7 +611,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
           ))}
         </div>
 
-        {/* Center Workspace Canvas */}
+        {/* Center Interactive Canvas Workspace */}
         <div className="flex-1 overflow-auto p-8 flex justify-center items-start bg-slate-950/80">
           <div
             ref={containerRef}
@@ -547,7 +624,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
           >
             <canvas ref={canvasRef} className="block w-full h-full rounded-lg" />
 
-            {/* 100% Pixel-Perfect Text Bounding Boxes */}
+            {/* Transparent Text Span Hover Highlights */}
             {activeTool === 'inspect' &&
               detectedSpans.map((span) => {
                 const boxX = span.x * scaleX;
@@ -559,19 +636,19 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
                   <div
                     key={span.id}
                     onClick={(e) => handleSpanClick(span, e)}
-                    className="absolute z-10 border border-rose-500/50 bg-rose-500/10 hover:border-rose-600 hover:bg-rose-500/30 cursor-pointer rounded transition group"
+                    className="absolute z-10 border border-transparent hover:border-rose-500 hover:bg-rose-500/15 cursor-pointer rounded transition group"
                     style={{
                       left: boxX,
                       top: boxY,
                       width: Math.max(boxW, 20),
                       height: Math.max(boxH, 14),
                     }}
-                    title={`Detected: "${span.text}" (${span.font}, ${span.size}pt, ${span.color})`}
+                    title={`Click to edit: "${span.text}" (${span.font}, ${span.size}pt)`}
                   />
                 );
               })}
 
-            {/* 100% Pixel-Perfect Image Bounding Boxes */}
+            {/* Embedded Image Hover Highlights */}
             {activeTool === 'inspect' &&
               detectedImages.map((img) => {
                 const boxX = img.x * scaleX;
@@ -582,7 +659,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
                 return (
                   <div
                     key={img.id}
-                    className="absolute z-10 border-2 border-dashed border-rose-500/80 hover:border-rose-600 bg-rose-500/10 flex items-center justify-center group rounded"
+                    className="absolute z-10 border-2 border-dashed border-transparent hover:border-rose-500 bg-transparent hover:bg-rose-500/10 flex items-center justify-center group rounded transition"
                     style={{
                       left: boxX,
                       top: boxY,
@@ -600,32 +677,191 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
                 );
               })}
 
-            {/* Overlapping Layers Selector Disambiguation Modal */}
+            {/* ── WYSIWYG REAL-TIME CANVAS ANNOTATIONS OVERLAY ── */}
+            {annotations
+              .filter((a) => a.page === currentPage)
+              .map((anno) => {
+                if (anno.type === 'replace_text' && anno.bbox) {
+                  const boxX = anno.bbox[0] * scaleX;
+                  const boxY = anno.bbox[1] * scaleY;
+                  const boxW = (anno.bbox[2] - anno.bbox[0]) * scaleX;
+                  const boxH = (anno.bbox[3] - anno.bbox[1]) * scaleY;
+
+                  return (
+                    <div
+                      key={anno.id}
+                      className="absolute z-20 flex items-center px-1 border border-rose-500/60 bg-white rounded shadow-sm group"
+                      style={{
+                        left: boxX,
+                        top: boxY,
+                        minWidth: Math.max(boxW, 30),
+                        height: Math.max(boxH, 16),
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: `${(anno.fontSize || 12) * scaleY}px`,
+                          color: anno.color || '#f43f5e',
+                          fontFamily: getCssFontFamily(anno.font),
+                          fontWeight: anno.isBold ? 'bold' : 'normal',
+                          fontStyle: anno.isItalic ? 'italic' : 'normal',
+                          lineHeight: '1',
+                        }}
+                        className="truncate"
+                      >
+                        {anno.text}
+                      </span>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeAnnotation(anno.id);
+                        }}
+                        className="absolute -top-2 -right-2 bg-rose-600 text-white p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition shadow"
+                        title="Remove Text Edit"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                }
+
+                if (anno.type === 'remove_image' && anno.bbox) {
+                  const boxX = anno.bbox[0] * scaleX;
+                  const boxY = anno.bbox[1] * scaleY;
+                  const boxW = (anno.bbox[2] - anno.bbox[0]) * scaleX;
+                  const boxH = (anno.bbox[3] - anno.bbox[1]) * scaleY;
+
+                  return (
+                    <div
+                      key={anno.id}
+                      className="absolute z-20 bg-rose-500/20 border-2 border-dashed border-rose-500 rounded flex items-center justify-center group"
+                      style={{ left: boxX, top: boxY, width: boxW, height: boxH }}
+                    >
+                      <span className="text-[10px] font-bold text-rose-500 bg-slate-900/80 px-2 py-0.5 rounded">
+                        IMAGE REMOVED
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeAnnotation(anno.id);
+                        }}
+                        className="absolute -top-2 -right-2 bg-slate-900 text-white p-1 rounded-full border border-slate-700 opacity-0 group-hover:opacity-100 transition"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                }
+
+                if (anno.type === 'image' && anno.imgData) {
+                  const boxX = (anno.x || 50) * scaleX;
+                  const boxY = (anno.y || 50) * scaleY;
+                  const boxW = (anno.w || 150) * scaleX;
+                  const boxH = (anno.h || 100) * scaleY;
+
+                  return (
+                    <div
+                      key={anno.id}
+                      className="absolute z-20 border border-slate-300 shadow-md group rounded"
+                      style={{ left: boxX, top: boxY, width: boxW, height: boxH }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={anno.imgData} alt="Stamp" className="w-full h-full object-contain rounded" />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeAnnotation(anno.id);
+                        }}
+                        className="absolute -top-2 -right-2 bg-rose-600 text-white p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition shadow"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                }
+
+                if (anno.type === 'text') {
+                  const boxX = (anno.x || 50) * scaleX;
+                  const boxY = (anno.y || 50) * scaleY;
+
+                  return (
+                    <div
+                      key={anno.id}
+                      className="absolute z-20 group flex items-center gap-1"
+                      style={{ left: boxX, top: boxY }}
+                    >
+                      <span
+                        style={{
+                          fontSize: `${(anno.fontSize || 14) * scaleY}px`,
+                          color: anno.color || '#f43f5e',
+                          fontFamily: getCssFontFamily(anno.font),
+                          fontWeight: anno.isBold ? 'bold' : 'normal',
+                          fontStyle: anno.isItalic ? 'italic' : 'normal',
+                        }}
+                      >
+                        {anno.text}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeAnnotation(anno.id);
+                        }}
+                        className="bg-rose-600 text-white p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition shadow"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                }
+
+                if (anno.type === 'pen' && anno.points) {
+                  return (
+                    <svg
+                      key={anno.id}
+                      className="absolute inset-0 pointer-events-none z-20 w-full h-full"
+                    >
+                      <polyline
+                        fill="none"
+                        stroke={anno.color || '#f43f5e'}
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        points={anno.points.map((p) => `${p.x * scaleX},${p.y * scaleY}`).join(' ')}
+                      />
+                    </svg>
+                  );
+                }
+
+                return null;
+              })}
+
+            {/* Overlapping Layers Selection Modal */}
             {overlappingLayers && layerPopupPos && (
               <div
-                className="absolute z-40 bg-slate-950 border-2 border-rose-500 p-4 rounded-2xl shadow-2xl flex flex-col gap-3 min-w-[280px]"
+                className="absolute z-40 bg-slate-950 border-2 border-rose-500 p-4 rounded-2xl shadow-2xl flex flex-col gap-3 min-w-[260px]"
                 style={{ left: layerPopupPos.x, top: layerPopupPos.y }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                   <div className="flex items-center gap-2 text-xs font-bold text-rose-400">
-                    <Layers className="w-4 h-4" /> Multiple Layers ({overlappingLayers.length})
+                    <Layers className="w-4 h-4" /> Select Overlapping Layer
                   </div>
-                  <button
-                    onClick={() => setOverlappingLayers(null)}
-                    className="text-slate-400 hover:text-white p-1"
-                  >
+                  <button onClick={() => setOverlappingLayers(null)} className="text-slate-400 hover:text-white p-1">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
-
-                <p className="text-xs font-medium text-slate-300">Which layer do you want to select?</p>
-
-                <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1">
+                <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto">
                   {overlappingLayers.map((layer, idx) => (
                     <button
                       key={idx}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                      }}
                       onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
                         if (layer.type === 'span') {
                           handleSpanClick(layer.data, e);
                         } else {
@@ -633,151 +869,138 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
                         }
                         setOverlappingLayers(null);
                       }}
-                      className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-900 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500/50 text-left transition group"
+                      className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500/50 text-left transition"
                     >
-                      <div className="w-6 h-6 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0 mt-0.5">
-                        {layer.type === 'span' ? <Type className="w-3.5 h-3.5 text-rose-400" /> : <ImageIcon className="w-3.5 h-3.5 text-rose-400" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        {layer.type === 'span' ? (
-                          <>
-                            <p className="text-xs font-bold text-white truncate group-hover:text-rose-300">
-                              "{layer.data.text}"
-                            </p>
-                            <p className="text-[10px] text-slate-400">
-                              {layer.data.font} · {layer.data.size}pt {layer.data.style ? `[${layer.data.style}]` : ''}
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-xs font-bold text-white group-hover:text-rose-300">
-                              Embedded Image Layer
-                            </p>
-                            <p className="text-[10px] text-slate-400">
-                              {Math.round(layer.data.w)}x{Math.round(layer.data.h)} px
-                            </p>
-                          </>
-                        )}
-                      </div>
+                      <Type className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span className="text-xs text-white truncate">
+                        {layer.type === 'span' ? `"${layer.data.text}"` : 'Embedded Image'}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
             )}
+          </div>
+        </div>
 
-            {/* In-Place Text Edit Modal Box */}
-            {editingSpan && (
-              <div
-                className="absolute z-30 bg-slate-950 border-2 border-rose-500 p-3.5 rounded-xl shadow-2xl flex flex-col gap-2.5 min-w-[240px]"
-                style={{ left: editingSpan.x * scaleX, top: editingSpan.y * scaleY }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="text-xs text-rose-400 font-bold flex items-center justify-between gap-2">
-                  <span>Edit Text ({editingSpan.font}, {editingSpan.size}pt)</span>
-                  {editingSpan.style && (
-                    <span className="text-[10px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded font-mono">
-                      {editingSpan.style}
-                    </span>
-                  )}
-                </div>
-                <input
-                  type="text"
-                  autoFocus
-                  value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleApplyInPlaceTextEdit()}
-                  className="bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-rose-500"
-                />
-                <div className="flex items-center justify-between gap-2 pt-1">
-                  <button
-                    onClick={handleApplyInPlaceTextEdit}
-                    className="bg-rose-600 hover:bg-rose-700 text-white text-xs px-3.5 py-1.5 rounded-lg font-bold transition"
-                  >
-                    Replace Text
-                  </button>
-                  <button
-                    onClick={() => setEditingSpan(null)}
-                    className="text-slate-400 text-xs hover:text-white px-2 py-1"
-                  >
-                    Cancel
+        {/* ── 4. RIGHT SIDEBAR: INTERACTIVE FORMATTING INSPECTOR ── */}
+        <div className="w-80 bg-slate-900 border-l border-slate-800 p-5 flex flex-col justify-between shrink-0 shadow-2xl overflow-y-auto">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-rose-500" /> Formatting Inspector
+              </h3>
+              <span className="text-[11px] text-slate-400 font-semibold">
+                {annotations.filter((a) => a.page === currentPage).length} Edits
+              </span>
+            </div>
+
+            {/* Active Text Editing Box */}
+            {editingSpan ? (
+              <div className="bg-slate-950 border-2 border-rose-500/80 rounded-2xl p-4 space-y-3.5 shadow-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> Edit Selected Text
+                  </span>
+                  <button onClick={() => setEditingSpan(null)} className="text-slate-500 hover:text-white">
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              </div>
-            )}
 
-            {/* Add Text Input Box */}
-            {textPosition && activeTool === 'text' && (
-              <div
-                className="absolute z-30 bg-slate-900 border border-rose-500 p-2 rounded-xl shadow-2xl flex items-center gap-2"
-                style={{ left: textPosition.x, top: textPosition.y }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <input
-                  type="text"
-                  autoFocus
-                  value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddText()}
-                  placeholder="Type text overlay..."
-                  className="bg-slate-800 text-white text-sm px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none"
-                />
+                <div>
+                  <label className="text-[11px] text-slate-400 font-medium block mb-1">Text Content</label>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleApplyInPlaceTextEdit()}
+                    className="w-full bg-slate-900 text-white text-xs px-3 py-2 rounded-xl border border-slate-700 focus:outline-none focus:border-rose-500 font-sans"
+                    placeholder="Enter replacement text..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[11px] text-slate-400 font-medium block mb-1">Font Size</label>
+                    <input
+                      type="number"
+                      value={fontSize}
+                      onChange={(e) => setFontSize(Number(e.target.value))}
+                      className="w-full bg-slate-900 text-white text-xs px-3 py-1.5 rounded-xl border border-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 font-medium block mb-1">Font Family</label>
+                    <select
+                      value={selectedFont}
+                      onChange={(e) => setSelectedFont(e.target.value)}
+                      className="w-full bg-slate-900 text-white text-xs px-2 py-1.5 rounded-xl border border-slate-700"
+                    >
+                      <option value="Helvetica">Sans-Serif</option>
+                      <option value="Times">Serif</option>
+                      <option value="Courier">Monospace</option>
+                    </select>
+                  </div>
+                </div>
+
                 <button
-                  onClick={handleAddText}
-                  className="bg-rose-600 text-white p-1.5 rounded-lg hover:bg-rose-700 transition"
+                  onClick={handleApplyInPlaceTextEdit}
+                  className="w-full py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-1.5"
                 >
-                  <Check className="w-4 h-4" />
+                  <Check className="w-4 h-4" /> Apply Live Preview
                 </button>
               </div>
+            ) : (
+              <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl text-center text-slate-400 text-xs">
+                <MousePointer className="w-6 h-6 mx-auto mb-2 text-rose-500/60" />
+                <p className="font-semibold text-slate-300">Click any text or image on canvas to inspect & edit</p>
+                <p className="text-[11px] text-slate-500 mt-1">Live changes render instantly on preview</p>
+              </div>
             )}
 
-            {/* Active Annotations Render Overlay */}
-            {annotations
-              .filter((a) => a.page === currentPage)
-              .map((anno) => {
-                const renderX = (anno.x || (anno.bbox ? anno.bbox[0] : 50)) * scaleX;
-                const renderY = (anno.y || (anno.bbox ? anno.bbox[1] : 50)) * scaleY;
-
-                return (
-                  <div
-                    key={anno.id}
-                    className="absolute z-20 group"
-                    style={{ left: renderX, top: renderY }}
-                  >
-                    {anno.type === 'replace_text' && (
-                      <span className="bg-rose-600/90 text-white text-xs px-2 py-1 rounded-md font-mono shadow">
-                        Replace: "{anno.text}"
-                      </span>
-                    )}
-                    {anno.type === 'remove_image' && (
-                      <span className="bg-rose-600/90 text-white text-xs px-2 py-1 rounded-md shadow">
-                        [Image Removed]
-                      </span>
-                    )}
-                    {anno.type === 'text' && (
-                      <span
-                        className="font-sans font-semibold cursor-move select-none px-1 rounded"
-                        style={{ fontSize: `${(anno.fontSize || 14) * scaleY}px`, color: anno.color }}
-                      >
-                        {anno.text}
-                      </span>
-                    )}
-                    {anno.type === 'image' && anno.imgData && (
-                      <img
-                        src={anno.imgData}
-                        alt="Stamp"
-                        style={{ width: (anno.w || 180) * scaleX, height: (anno.h || 120) * scaleY }}
-                        className="rounded shadow-lg"
-                      />
-                    )}
-                    <button
-                      onClick={() => setAnnotations((prev) => prev.filter((a) => a.id !== anno.id))}
-                      className="opacity-0 group-hover:opacity-100 absolute -top-3 -right-3 bg-rose-600 text-white p-1 rounded-full shadow-lg hover:bg-rose-700 transition"
+            {/* List of Applied Edits */}
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                Applied Page Edits ({annotations.filter((a) => a.page === currentPage).length})
+              </label>
+              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                {annotations
+                  .filter((a) => a.page === currentPage)
+                  .map((anno) => (
+                    <div
+                      key={anno.id}
+                      className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between text-xs transition hover:border-slate-700"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                );
-              })}
+                      <div className="truncate mr-2">
+                        <span className="font-bold text-rose-400 uppercase text-[10px] block">
+                          {anno.type.replace('_', ' ')}
+                        </span>
+                        <span className="text-slate-200 font-medium truncate block">
+                          {anno.text || anno.label || 'Modified object'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeAnnotation(anno.id)}
+                        className="text-slate-500 hover:text-rose-400 p-1"
+                        title="Delete Edit"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-800">
+            <button
+              onClick={handleSaveEditedPdf}
+              disabled={isProcessing || annotations.length === 0}
+              className="w-full py-3 bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white rounded-xl font-extrabold text-xs shadow-lg shadow-rose-600/30 transition disabled:opacity-40"
+            >
+              Save & Download Final PDF
+            </button>
           </div>
         </div>
       </div>

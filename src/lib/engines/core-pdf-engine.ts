@@ -779,9 +779,18 @@ export async function executeWorkflow(
       case 'pdf-a':
         currentBytes = await pdfToPdfA(tempFile, stepProgress);
         break;
+      case 'protect':
+        if (step.params?.password) {
+          currentBytes = await protectPdf(tempFile, step.params.password, stepProgress);
+        }
+        break;
+      case 'repair':
+        currentBytes = await repairPdf(tempFile, stepProgress);
+        break;
       default:
         break;
     }
+
   }
 
   onProgress?.(100);

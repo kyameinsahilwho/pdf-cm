@@ -64,11 +64,13 @@ export async function handleConversionRequest(
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
-    const extra =
-      (formData.get('password') as string) ||
-      (formData.get('extra') as string) ||
-      (formData.get('userPassword') as string) ||
-      '';
+    const redactions = formData.get('redactions') as string | null;
+    const edits = formData.get('edits') as string | null;
+    const page = formData.get('page') as string | null;
+    const password = formData.get('password') as string | null;
+    const extraField = formData.get('extra') as string | null;
+
+    const extra = redactions || edits || page || password || extraField || '';
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided in request' }, { status: 400 });
@@ -84,10 +86,11 @@ export async function handleConversionRequest(
 
       const outboundFormData = new FormData();
       outboundFormData.append('file', file, file.name);
-      if (extra) {
-        outboundFormData.append('extra', extra);
-        outboundFormData.append('password', extra);
-      }
+      if (extra) outboundFormData.append('extra', extra);
+      if (redactions) outboundFormData.append('redactions', redactions);
+      if (edits) outboundFormData.append('edits', edits);
+      if (page) outboundFormData.append('page', page);
+      if (password) outboundFormData.append('password', password);
 
       const upstreamRes = await fetch(targetUrl, {
         method: 'POST',

@@ -35,6 +35,21 @@ export default async function ToolPage({ params }: Props) {
     notFound();
   }
 
+  // Remove site Header and Footer for dedicated studio tools (Edit, Redact, Workflow, Sign)
+  const isStudioPage =
+    ['edit-pdf', 'redact-pdf', 'create-workflow', 'sign-pdf'].includes(slug) ||
+    tool.id === 'edit' ||
+    tool.id === 'redact' ||
+    tool.id === 'workflow';
+
+  if (isStudioPage) {
+    return (
+      <div className="w-full min-h-screen bg-slate-950 flex flex-col font-sans overflow-x-hidden">
+        <ToolWorkspace tool={tool} />
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell">
       <Header />

@@ -213,12 +213,217 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
             writer.write(f)
         return "application/pdf", ".pdf"
 
+    # 9. Inspect PDF Elements (PyMuPDF)
+    elif tool in ["inspect-pdf"]:
+        import fitz, json
+        page_num = 1
+        if extra:
+            try:
+                page_num = int(extra) if extra.isdigit() else int(json.loads(extra).get("page", 1))
+            except Exception:
+                page_num = 1
+        doc = fitz.open(input_path)
+        p_idx = max(0, min(page_num - 1, len(doc) - 1))
+        page = doc.load_page(p_idx)
+        rect = page.rect
+
+        spans = []
+        span_id = 0
+        text_blocks = page.get_text("dict").get("blocks", [])
+
+        for block in text_blocks:
+            if block.get("type") == 0:
+                for line in block.get("lines", []):
+                    for span in line.get("spans", []):
+                        text = span.get("text", "").strip()
+                        if text:
+                            bbox = span.get("bbox", [0, 0, 0, 0])
+                            color_int = span.get("color", 0)
+                            color_hex = f"#{color_int:06x}" if isinstance(color_int, int) else "#000000"
+                            spans.append({
+                                "id": f"span_{span_id}",
+                                "text": text,
+                                "bbox": list(bbox),
+                                "x": bbox[0],
+                                "y": bbox[1],
+                                "w": bbox[2] - bbox[0],
+                                "h": bbox[3] - bbox[1],
+                                "font": span.get("font", "Helvetica"),
+                                "size": span.get("size", 12),
+                                "color": color_hex
+                            })
+                            span_id += 1
+
+        images = []
+        for img_idx, img_info in enumerate(page.get_images()):
+            try:
+                xref = img_info[0]
+                rects = page.get_image_rects(xref)
+                for r_idx, r in enumerate(rects):
+                    if r.width > 10 and r.height > 10 and (r.width < rect.width * 0.98 or r.height < rect.height * 0.98):
+                        images.append({
+                            "id": f"img_{img_idx}_{r_idx}",
+                            "bbox": [r.x0, r.y0, r.x1, r.y1],
+                            "x": r.x0,
+                            "y": r.y0,
+                            "w": r.width,
+                            "h": r.height
+                        })
+            except Exception:
+                pass
+
+
+        res = {
+            "spans": spans,
+            "images": images,
+            "width": rect.width,
+            "height": rect.height,
+            "page": page_num,
+            "total_pages": len(doc)
+        }
+
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(res, f)
+        return "application/json", ".json"
+
+    # 10. Edit PDF (PyMuPDF)
+    elif tool in ["edit-pdf"]:
+        import fitz, json
+        def map_font(fn="", is_b=False, is_i=False):
+            f = (fn or "").lower()
+            b = is_b or any(k in f for k in ["bold", "black", "heavy", "medium", "semibold", "bld", "bd"])
+            i = is_i or any(k in f for k in ["italic", "oblique", "slanted", "it", "ital"])
+            serif = ["times", "georgia", "garamond", "cambria", "palatino", "baskerville", "century", "bookman", "didot", "bodoni", "minion", "caslon", "serif", "roman"]
+            mono = ["courier", "mono", "code", "consolas", "menlo", "monaco", "fixed", "typewriter"]
+            if any(k in f for k in serif):
+                return "tibi" if (b and i) else ("tibo" if b else ("tiit" if i else "times"))
+            elif any(k in f for k in mono):
+                return "cobi" if (b and i) else ("cobo" if b else ("coit" if i else "cour"))
+            else:
+                return "hebi" if (b and i) else ("hebo" if b else ("heit" if i else "helv"))
+
+
+        doc = fitz.open(input_path)
+        edits = []
+        if extra:
+            try:
+                edits = json.loads(extra)
+            except Exception:
+                pass
+        if isinstance(edits, list):
+            for edit in edits:
+                page_num = edit.get("page", 1) - 1
+                if 0 <= page_num < len(doc):
+                    page = doc.load_page(page_num)
+                    edit_type = edit.get("type", "text")
+                    color_hex = (edit.get("color") or "#f43f5e").lstrip("#")
+                    color = (
+                        int(color_hex[0:2], 16) / 255.0,
+                        int(color_hex[2:4], 16) / 255.0,
+                        int(color_hex[4:6], 16) / 255.0
+                    ) if len(color_hex) == 6 else (0.95, 0.25, 0.37)
+
+                    if edit_type == 'text':
+                        text = edit.get("text", "")
+                        x = edit.get("x", 50)
+                        y = edit.get("y", 50)
+                        fontsize = edit.get("fontSize", 14)
+                        ffont = map_font(edit.get("font", ""), edit.get("isBold", False), edit.get("isItalic", False))
+                        if text:
+                            page.insert_text(fitz.Point(x, y), text, fontname=ffont, fontsize=fontsize, color=color)
+
+                    elif edit_type == 'replace_text':
+                        new_text = edit.get("text", "") or edit.get("newText", "")
+                        bbox = edit.get("bbox")
+                        raw_fs = edit.get("fontSize") or edit.get("size")
+                        ffont = map_font(edit.get("font", ""), edit.get("isBold", False), edit.get("isItalic", False))
+                        if bbox and len(bbox) == 4:
+                            rect = fitz.Rect(bbox)
+                            fontsize = float(raw_fs) if (raw_fs and float(raw_fs) > 0) else max(6.0, rect.height * 0.82)
+                            page.add_redact_annot(
+                                rect,
+                                text=new_text if new_text else None,
+                                fill=None,
+                                fontname=ffont,
+                                text_color=color,
+                                fontsize=fontsize
+                            )
+                            page.apply_redactions()
+
+
+
+                    elif edit_type == 'remove_image':
+                        bbox = edit.get("bbox")
+                        if bbox and len(bbox) == 4:
+                            rect = fitz.Rect(bbox)
+                            page.add_redact_annot(rect, fill=(1, 1, 1))
+                            page.apply_redactions()
+
+                    elif edit_type == 'pen':
+                        points = edit.get("points", [])
+                        if len(points) > 1:
+                            fitz_pts = [fitz.Point(p["x"], p["y"]) for p in points]
+                            page.draw_polyline(fitz_pts, color=color, width=2)
+
+                    elif edit_type == 'rect':
+                        x = edit.get("x", 50)
+                        y = edit.get("y", 50)
+                        w = edit.get("w", 100)
+                        h = edit.get("h", 50)
+                        rect = fitz.Rect(x, y, x + w, y + h)
+                        page.draw_rect(rect, color=color, fill=None, width=1.5)
+
+        doc.save(output_path)
+        return "application/pdf", ".pdf"
+
+    # 11. Redact PDF (PyMuPDF)
+    elif tool in ["redact-pdf"]:
+        import fitz, json
+        doc = fitz.open(input_path)
+        redactions = []
+        if extra:
+            try:
+                redactions = json.loads(extra)
+            except Exception:
+                pass
+        if isinstance(redactions, list):
+            for red in redactions:
+                page_num = red.get("page", 1) - 1
+                if 0 <= page_num < len(doc):
+                    page = doc.load_page(page_num)
+                    x = red.get("x", 0)
+                    y = red.get("y", 0)
+                    w = red.get("width") if red.get("width") is not None else red.get("w", 50)
+                    h = red.get("height") if red.get("height") is not None else red.get("h", 20)
+                    rect = fitz.Rect(x, y, x + w, y + h)
+
+                    color_hex = (red.get("color") or "#000000").lstrip("#")
+                    fill_color = (
+                        int(color_hex[0:2], 16) / 255.0,
+                        int(color_hex[2:4], 16) / 255.0,
+                        int(color_hex[4:6], 16) / 255.0
+                    ) if len(color_hex) == 6 else (0, 0, 0)
+
+                    label = red.get("label", "")
+                    text_color = (1, 1, 1) if fill_color == (0, 0, 0) else (0, 0, 0)
+
+                    page.add_redact_annot(
+                        rect,
+                        text=label if label else None,
+                        fill=fill_color,
+                        text_color=text_color
+                    )
+                    page.apply_redactions()
+
+        doc.save(output_path, garbage=4, deflate=True)
+        return "application/pdf", ".pdf"
 
     # Default fallback
     import fitz
     doc = fitz.open(input_path)
     doc.save(output_path)
     return "application/pdf", ".pdf"
+
 
 
 @app.route('/convert', methods=['POST'])

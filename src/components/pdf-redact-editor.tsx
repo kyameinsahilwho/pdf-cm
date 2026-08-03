@@ -162,8 +162,14 @@ export function PdfRedactEditor({ file, onBack }: { file: File; onBack?: () => v
 
   // Canvas Mouse Down Handler
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (overlappingLayers) {
+      setOverlappingLayers(null);
+      return;
+    }
+
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
+
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
@@ -634,10 +640,18 @@ export function PdfRedactEditor({ file, onBack }: { file: File; onBack?: () => v
               <div
                 className="absolute z-40 bg-slate-900 border border-slate-700 rounded-xl p-3 shadow-2xl space-y-2 min-w-[220px]"
                 style={{ left: `${layerPopupPos.x + 10}px`, top: `${layerPopupPos.y + 10}px` }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between pb-1 border-b border-slate-800 text-xs font-bold text-slate-300">
                   <span>Select Layer to Redact</span>
-                  <button onClick={() => setOverlappingLayers(null)} className="text-slate-500 hover:text-white">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOverlappingLayers(null);
+                    }}
+                    className="text-slate-500 hover:text-white"
+                  >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -645,11 +659,19 @@ export function PdfRedactEditor({ file, onBack }: { file: File; onBack?: () => v
                   {overlappingLayers.map((layer, idx) => (
                     <button
                       key={idx}
-                      onClick={() => {
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
                         if (layer.type === 'span') {
                           addRedactionArea(layer.data.x, layer.data.y, layer.data.w, layer.data.h);
+                          toast({ title: 'Text Redacted 🚫', description: `Covered "${layer.data.text.substring(0, 30)}..."` });
                         } else {
                           addRedactionArea(layer.data.x, layer.data.y, layer.data.w, layer.data.h, '[IMAGE REDACTED]');
+                          toast({ title: 'Image Redacted 🖼️', description: 'Covered image object area.' });
                         }
                         setOverlappingLayers(null);
                       }}
@@ -661,6 +683,7 @@ export function PdfRedactEditor({ file, onBack }: { file: File; onBack?: () => v
                 </div>
               </div>
             )}
+
           </div>
         </div>
 

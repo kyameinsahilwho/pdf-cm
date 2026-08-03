@@ -14,6 +14,7 @@ import logging
 import tempfile
 import traceback
 import subprocess
+import shutil
 from http.server import BaseHTTPRequestHandler
 
 # Set up logging
@@ -37,7 +38,6 @@ def try_native_conversion(input_path: str, output_path: str) -> bool:
             logger.warning(f"[Engine] docx2pdf native conversion skipped: {e}")
 
     soffice_cmd = None
-    import shutil
     candidates = [
         "soffice", "libreoffice",
         "/usr/bin/soffice", "/usr/bin/libreoffice",
@@ -58,7 +58,6 @@ def try_native_conversion(input_path: str, output_path: str) -> bool:
                 break
         except Exception:
             pass
-
 
     if soffice_cmd:
         try:
@@ -94,7 +93,6 @@ def convert_word_to_pdf(input_path: str, output_path: str, allow_reportlab_fallb
     if not allow_reportlab_fallback:
         raise RuntimeError("LibreOffice conversion engine is unavailable on this host.")
 
-    # Pure Python ReportLab Fallback
     import docx
     from reportlab.lib.pagesizes import letter
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -262,7 +260,7 @@ def convert_pdf_to_excel(input_pdf: str, output_xlsx: str):
 def convert_pdf_to_ppt(input_pdf: str, output_pptx: str):
     """Convert PDF pages to PowerPoint PPTX."""
     logger.info(f"Converting PDF '{input_pdf}' -> PPT '{output_pptx}'")
-    import fitz  # PyMuPDF
+    import fitz
     import pptx
     from pptx.util import Inches
 
@@ -302,7 +300,7 @@ def convert_pdf_to_markdown(input_pdf: str, output_md: str):
 
 
 def compress_pdf_file(input_pdf: str, output_pdf: str):
-    """Compress PDF file."""
+    """Compress PDF file using PyMuPDF."""
     logger.info(f"Compressing PDF '{input_pdf}' -> '{output_pdf}'")
     import fitz
     doc = fitz.open(input_pdf)
@@ -311,11 +309,10 @@ def compress_pdf_file(input_pdf: str, output_pdf: str):
 
 
 def ocr_pdf_file(input_pdf: str, output_pdf: str):
-    """OCR PDF using PyMuPDF / Tesseract."""
+    """OCR PDF using PyMuPDF."""
     logger.info(f"OCR PDF '{input_pdf}' -> '{output_pdf}'")
     import fitz
     doc = fitz.open(input_pdf)
-    # Perform standard PDF copy/optimization if OCR binary unavailable
     doc.save(output_pdf)
     return True
 
@@ -359,7 +356,6 @@ def unlock_pdf_file(input_pdf: str, output_pdf: str, password: str = ""):
     return True
 
 
-
 def repair_pdf_file(input_pdf: str, output_pdf: str):
     """Repair corrupted PDF using PyMuPDF."""
     logger.info(f"Repairing PDF '{input_pdf}' -> '{output_pdf}'")
@@ -367,6 +363,275 @@ def repair_pdf_file(input_pdf: str, output_pdf: str):
     doc = fitz.open(input_pdf)
     doc.save(output_pdf, clean=True, deflate=True)
     return True
+
+
+def inspect_pdf_page_elements(input_pdf: str, extra_param: str, output_json: str):
+    """Inspect text spans and image elements on a PDF page using PyMuPDF."""
+    logger.info(f"Inspecting PDF page elements '{input_pdf}'")
+    import fitz
+    
+    page_num = 1
+    if extra_param:
+        try:
+            if extra_param.isdigit():
+                page_num = int(extra_param)
+            else:
+                data = json.loads(extra_param)
+                page_num = int(data.get("page", 1))
+        except Exception:
+            page_num = 1
+
+    doc = fitz.open(input_pdf)
+    p_idx = max(0, min(page_num - 1, len(doc) - 1))
+    page = doc.load_page(p_idx)
+    rect = page.rect
+
+    spans = []
+    span_id = 0
+    text_blocks = page.get_text("dict").get("blocks", [])
+
+    for block in text_blocks:
+        if block.get("type") == 0:
+            for line in block.get("lines", []):
+                for span in line.get("spans", []):
+                    text = span.get("text", "").strip()
+                    if text:
+                        bbox = span.get("bbox", [0, 0, 0, 0])
+                        color_int = span.get("color", 0)
+                        color_hex = f"#{color_int:06x}" if isinstance(color_int, int) else "#000000"
+                        spans.append({
+                            "id": f"span_{span_id}",
+                            "text": text,
+                            "bbox": list(bbox),
+                            "x": bbox[0],
+                            "y": bbox[1],
+                            "w": bbox[2] - bbox[0],
+                            "h": bbox[3] - bbox[1],
+                            "font": span.get("font", "Helvetica"),
+                            "size": span.get("size", 12),
+                            "color": color_hex
+                        })
+                        span_id += 1
+
+    images = []
+    for img_idx, img_info in enumerate(page.get_images()):
+        try:
+            xref = img_info[0]
+            rects = page.get_image_rects(xref)
+            for r_idx, r in enumerate(rects):
+                if r.width > 10 and r.height > 10 and (r.width < rect.width * 0.98 or r.height < rect.height * 0.98):
+                    images.append({
+                        "id": f"img_{img_idx}_{r_idx}",
+                        "bbox": [r.x0, r.y0, r.x1, r.y1],
+                        "x": r.x0,
+                        "y": r.y0,
+                        "w": r.width,
+                        "h": r.height
+                    })
+        except Exception:
+            pass
+
+
+    res = {
+        "spans": spans,
+        "images": images,
+        "width": rect.width,
+        "height": rect.height,
+        "page": page_num,
+        "total_pages": len(doc)
+    }
+
+    with open(output_json, "w", encoding="utf-8") as f:
+        json.dump(res, f)
+    return True
+
+
+def map_font_to_fitz(font_name: str = "", is_bold: bool = False, is_italic: bool = False) -> str:
+    """Map arbitrary PDF font names to PyMuPDF standard built-in font identifiers."""
+    fn = (font_name or "").lower()
+
+    b = is_bold or any(k in fn for k in ["bold", "black", "heavy", "medium", "semibold", "bld", "bd"])
+    i = is_italic or any(k in fn for k in ["italic", "oblique", "slanted", "it", "ital"])
+
+    serif_keywords = [
+        "times", "georgia", "garamond", "cambria", "palatino", "baskerville", 
+        "century", "bookman", "didot", "bodoni", "minion", "caslon", "serif", "roman"
+    ]
+    if any(k in fn for k in serif_keywords):
+        if b and i:
+            return "tibi"
+        elif b:
+            return "tibo"
+        elif i:
+            return "tiit"
+        return "times"
+
+    mono_keywords = ["courier", "mono", "code", "consolas", "menlo", "monaco", "fixed", "typewriter"]
+    if any(k in fn for k in mono_keywords):
+        if b and i:
+            return "cobi"
+        elif b:
+            return "cobo"
+        elif i:
+            return "coit"
+        return "cour"
+
+    if b and i:
+        return "hebi"
+    elif b:
+        return "hebo"
+    elif i:
+        return "heit"
+    return "helv"
+
+
+
+def edit_pdf_file(input_pdf: str, output_pdf: str, edits_data: str = ""):
+    """Apply text annotations, replacements, and drawings to PDF cleanly using PyMuPDF."""
+    logger.info(f"Editing PDF '{input_pdf}' -> '{output_pdf}'")
+    import fitz
+    doc = fitz.open(input_pdf)
+    
+    edits = []
+    if edits_data:
+        try:
+            edits = json.loads(edits_data)
+        except Exception:
+            pass
+
+    if isinstance(edits, list):
+        for edit in edits:
+            page_num = edit.get("page", 1) - 1
+            if 0 <= page_num < len(doc):
+                page = doc.load_page(page_num)
+                edit_type = edit.get("type", "text")
+                color_hex = (edit.get("color") or "#f43f5e").lstrip("#")
+                
+                if len(color_hex) == 6:
+                    color = (
+                        int(color_hex[0:2], 16) / 255.0,
+                        int(color_hex[2:4], 16) / 255.0,
+                        int(color_hex[4:6], 16) / 255.0
+                    )
+                else:
+                    color = (0.95, 0.25, 0.37)
+
+                if edit_type == 'text':
+                    text = edit.get("text", "")
+                    x = edit.get("x", 50)
+                    y = edit.get("y", 50)
+                    fontsize = edit.get("fontSize", 14)
+                    font_name = edit.get("font", "helv")
+                    is_bold = edit.get("isBold", False)
+                    is_italic = edit.get("isItalic", False)
+                    fitz_font = map_font_to_fitz(font_name, is_bold, is_italic)
+                    if text:
+                        page.insert_text(
+                            fitz.Point(x, y),
+                            text,
+                            fontname=fitz_font,
+                            fontsize=fontsize,
+                            color=color
+                        )
+
+                elif edit_type == 'replace_text':
+                    new_text = edit.get("text", "") or edit.get("newText", "")
+                    bbox = edit.get("bbox")
+                    raw_fs = edit.get("fontSize") or edit.get("size")
+                    font_name = edit.get("font", "helv")
+                    is_bold = edit.get("isBold", False)
+                    is_italic = edit.get("isItalic", False)
+                    fitz_font = map_font_to_fitz(font_name, is_bold, is_italic)
+
+                    if bbox and len(bbox) == 4:
+                        rect = fitz.Rect(bbox)
+                        if raw_fs and float(raw_fs) > 0:
+                            fontsize = float(raw_fs)
+                        else:
+                            fontsize = max(6.0, rect.height * 0.82)
+
+                        page.add_redact_annot(
+                            rect,
+                            text=new_text if new_text else None,
+                            fill=None,
+                            fontname=fitz_font,
+                            fontsize=fontsize,
+                            text_color=color
+                        )
+                        page.apply_redactions()
+
+
+
+                elif edit_type == 'remove_image':
+                    bbox = edit.get("bbox")
+                    if bbox and len(bbox) == 4:
+                        rect = fitz.Rect(bbox)
+                        page.add_redact_annot(rect, fill=(1, 1, 1))
+                        page.apply_redactions()
+
+                elif edit_type == 'pen':
+                    points = edit.get("points", [])
+                    if len(points) > 1:
+                        fitz_pts = [fitz.Point(p["x"], p["y"]) for p in points]
+                        page.draw_polyline(fitz_pts, color=color, width=2)
+
+                elif edit_type == 'rect':
+                    x = edit.get("x", 50)
+                    y = edit.get("y", 50)
+                    w = edit.get("w", 100)
+                    h = edit.get("h", 50)
+                    rect = fitz.Rect(x, y, x + w, y + h)
+                    page.draw_rect(rect, color=color, fill=None, width=1.5)
+
+    doc.save(output_pdf)
+    return True
+
+
+def redact_pdf_file(input_pdf: str, output_pdf: str, redactions_data: str = ""):
+    """Permanently redact specified areas from PDF using PyMuPDF."""
+    logger.info(f"Redacting PDF '{input_pdf}' -> '{output_pdf}'")
+    import fitz
+    doc = fitz.open(input_pdf)
+
+    redactions = []
+    if redactions_data:
+        try:
+            redactions = json.loads(redactions_data)
+        except Exception:
+            pass
+
+    if isinstance(redactions, list):
+        for red in redactions:
+            page_num = red.get("page", 1) - 1
+            if 0 <= page_num < len(doc):
+                page = doc.load_page(page_num)
+                x = red.get("x", 0)
+                y = red.get("y", 0)
+                w = red.get("width") if red.get("width") is not None else red.get("w", 50)
+                h = red.get("height") if red.get("height") is not None else red.get("h", 20)
+                rect = fitz.Rect(x, y, x + w, y + h)
+
+                color_hex = (red.get("color") or "#000000").lstrip("#")
+                fill_color = (
+                    int(color_hex[0:2], 16) / 255.0,
+                    int(color_hex[2:4], 16) / 255.0,
+                    int(color_hex[4:6], 16) / 255.0
+                ) if len(color_hex) == 6 else (0, 0, 0)
+
+                label = red.get("label", "")
+                text_color = (1, 1, 1) if fill_color == (0, 0, 0) else (0, 0, 0)
+
+                page.add_redact_annot(
+                    rect,
+                    text=label if label else None,
+                    fill=fill_color,
+                    text_color=text_color
+                )
+                page.apply_redactions()
+
+    doc.save(output_pdf, garbage=4, deflate=True)
+    return True
+
 
 
 # ---------------------------------------------------------------------------
@@ -398,14 +663,23 @@ def dispatch_conversion(mode: str, input_path: str, output_path: str, extra: str
     elif mode in ["ocr-pdf"]:
         ocr_pdf_file(input_path, output_path)
     elif mode in ["protect-pdf"]:
-        protect_pdf_file(input_path, output_path, password=extra or "123456")
+        protect_pdf_file(input_path, output_path, password=extra)
     elif mode in ["unlock-pdf"]:
-        unlock_pdf_file(input_path, output_path, password=extra or "")
+        unlock_pdf_file(input_path, output_path, password=extra)
     elif mode in ["repair-pdf"]:
         repair_pdf_file(input_path, output_path)
+    elif mode in ["inspect-pdf"]:
+        inspect_pdf_page_elements(input_path, extra, output_path)
+    elif mode in ["edit-pdf"]:
+        edit_pdf_file(input_path, output_path, edits_data=extra)
+    elif mode in ["redact-pdf"]:
+        redact_pdf_file(input_path, output_path, redactions_data=extra)
     else:
-        # Fallback default
-        convert_word_to_pdf(input_path, output_path)
+        # Default PDF copy
+        import fitz
+        doc = fitz.open(input_path)
+        doc.save(output_path)
+
 
 
 # ---------------------------------------------------------------------------
