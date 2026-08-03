@@ -56,7 +56,7 @@ export async function handleConversionRequest(
   outputExt: string,
   mimeType: string
 ): Promise<NextResponse> {
-  const serviceUrl =
+  const rawServiceUrl =
     process.env.PDF_ENGINE_SERVICE_URL ||
     process.env.WORD_TO_PDF_SERVICE_URL ||
     process.env.RENDER_CONVERSION_SERVICE_URL;
@@ -71,8 +71,11 @@ export async function handleConversionRequest(
     }
 
     // 1. Forward request to Render container microservice if URL configured
-    if (serviceUrl) {
-      const baseUrl = serviceUrl.replace(/\/+$/, '');
+    if (rawServiceUrl && rawServiceUrl.trim()) {
+      let baseUrl = rawServiceUrl.trim().replace(/\/+$/, '');
+      if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+        baseUrl = `https://${baseUrl}`;
+      }
       const targetUrl = `${baseUrl}/convert/${toolName}`;
 
       const outboundFormData = new FormData();
