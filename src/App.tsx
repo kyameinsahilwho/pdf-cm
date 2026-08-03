@@ -13,6 +13,9 @@ import { Link, Navigate, Route, Routes, useParams, useLocation } from 'react-rou
 import { Header } from '@/components/header';
 import { PdfFusion } from '@/components/pdf-fusion';
 import { ToolWorkspace } from '@/components/tool-workspace';
+import { SitemapPage } from '@/components/sitemap';
+import { BlogIndexPage } from '@/components/blog-index';
+import { BlogPostPage } from '@/components/blog-post';
 import { Toaster } from './shims/toaster';
 import { TOOL_REGISTRY, CATEGORIES, type CategoryId, type ToolDef } from '@/lib/tools-data';
 import { getToolSeoContent } from '@/lib/tool-seo';
@@ -101,10 +104,10 @@ function ToolsTanStackTable() {
           <div>
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <TableIcon className="w-5 h-5 text-rose-400" />
-              TanStack Table View
+              Table View
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Interactive client-side data table with sorting, search filtering, and pagination powered by TanStack Table & Query.
+              Interactive client-side data table with sorting, search filtering, and pagination.
             </p>
           </div>
           <input
@@ -216,6 +219,11 @@ function GlobalFooter() {
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
           Zero Server Storage • Files never leave your browser • 100% Client-Side Privacy
         </span>
+        <div className="flex items-center gap-4 text-xs font-mono text-slate-400">
+          <Link to="/" className="hover:text-white transition-colors">All Tools</Link>
+          <Link to="/blog" className="hover:text-amber-400 transition-colors">Blog & Guides</Link>
+          <Link to="/sitemap" className="hover:text-rose-400 transition-colors">Sitemap</Link>
+        </div>
         <span className="text-xs text-slate-600">
           © {new Date().getFullYear()} Love for PDF. All rights reserved.
         </span>
@@ -255,7 +263,7 @@ function HomePage() {
               }`}
             >
               <TableIcon className="w-3.5 h-3.5" />
-              TanStack Table View
+              Table View
             </button>
           </div>
         </div>
@@ -364,11 +372,25 @@ function NotFoundPage() {
   );
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/sitemap" element={<SitemapPage />} />
+        <Route path="/blog" element={<BlogIndexPage />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/404" element={<NotFoundPage />} />
         <Route path="/:slug" element={<ToolWorkspacePage />} />
         <Route path="*" element={<NotFoundPage />} />
