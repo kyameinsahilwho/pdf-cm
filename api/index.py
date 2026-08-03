@@ -320,9 +320,12 @@ def ocr_pdf_file(input_pdf: str, output_pdf: str):
     return True
 
 
-def protect_pdf_file(input_pdf: str, output_pdf: str, password: str = "123456"):
-    """Encrypt PDF file with password."""
-    logger.info(f"Protecting PDF '{input_pdf}'")
+def protect_pdf_file(input_pdf: str, output_pdf: str, password: str = ""):
+    """Encrypt PDF file with user-provided password."""
+    pwd = password.strip() if password else ""
+    if not pwd:
+        raise ValueError("Password cannot be empty. Please enter a valid password.")
+    logger.info(f"Protecting PDF '{input_pdf}' with user password.")
     from pypdf import PdfReader, PdfWriter
     reader = PdfReader(input_pdf)
     writer = PdfWriter()
@@ -330,19 +333,22 @@ def protect_pdf_file(input_pdf: str, output_pdf: str, password: str = "123456"):
     for page in reader.pages:
         writer.add_page(page)
 
-    writer.encrypt(user_password=password, owner_password=password)
+    writer.encrypt(user_password=pwd, owner_password=pwd)
     with open(output_pdf, "wb") as f:
         writer.write(f)
     return True
 
 
 def unlock_pdf_file(input_pdf: str, output_pdf: str, password: str = ""):
-    """Decrypt PDF file with password."""
+    """Decrypt PDF file with user-provided password."""
+    pwd = password.strip() if password else ""
     logger.info(f"Unlocking PDF '{input_pdf}'")
     from pypdf import PdfReader, PdfWriter
     reader = PdfReader(input_pdf)
     if reader.is_encrypted:
-        reader.decrypt(password)
+        unlocked = reader.decrypt(pwd)
+        if unlocked == 0:
+            raise ValueError("Incorrect password. Failed to decrypt PDF.")
 
     writer = PdfWriter()
     for page in reader.pages:
@@ -351,6 +357,7 @@ def unlock_pdf_file(input_pdf: str, output_pdf: str, password: str = ""):
     with open(output_pdf, "wb") as f:
         writer.write(f)
     return True
+
 
 
 def repair_pdf_file(input_pdf: str, output_pdf: str):

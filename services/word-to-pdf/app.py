@@ -187,21 +187,32 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
         from pypdf import PdfReader, PdfWriter
         reader = PdfReader(input_path)
         writer = PdfWriter()
-        for p in reader.pages: writer.add_page(p)
-        pwd = extra or "123456"
+        for p in reader.pages:
+            writer.add_page(p)
+        pwd = extra.strip() if extra else ""
+        if not pwd:
+            raise RuntimeError("Password cannot be empty. Please enter a valid password.")
         writer.encrypt(user_password=pwd, owner_password=pwd)
-        with open(output_path, "wb") as f: writer.write(f)
+        with open(output_path, "wb") as f:
+            writer.write(f)
         return "application/pdf", ".pdf"
 
     # 8. Unlock PDF (pypdf)
     elif tool in ["unlock-pdf"]:
         from pypdf import PdfReader, PdfWriter
         reader = PdfReader(input_path)
-        if reader.is_encrypted: reader.decrypt(extra or "")
+        pwd = extra.strip() if extra else ""
+        if reader.is_encrypted:
+            unlocked = reader.decrypt(pwd)
+            if unlocked == 0:
+                raise RuntimeError("Incorrect password. Failed to decrypt PDF.")
         writer = PdfWriter()
-        for p in reader.pages: writer.add_page(p)
-        with open(output_path, "wb") as f: writer.write(f)
+        for p in reader.pages:
+            writer.add_page(p)
+        with open(output_path, "wb") as f:
+            writer.write(f)
         return "application/pdf", ".pdf"
+
 
     # Default fallback
     import fitz
@@ -252,8 +263,15 @@ def handle_conversion(tool_name: str = "word-to-pdf"):
         logger.info(f"[INFO] Starting tool '{tool}' | File: '{filename}' ({len(file_bytes)} bytes)")
 
         try:
-            extra_param = request.form.get("extra", request.args.get("extra", ""))
+            extra_param = (
+                request.form.get("password") or
+                request.form.get("extra") or
+                request.args.get("password") or
+                request.args.get("extra") or
+                ""
+            )
             mime_type, out_ext = execute_conversion(tool, input_path, output_path, extra_param)
+
 
             if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
                 logger.error(f"[ERROR] Engine failed to generate output for tool '{tool}'")
