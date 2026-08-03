@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, FileUp, Zap, ArrowUp, ArrowDown, Trash2, Plus,
   RotateCw, Check, Sparkles, Layers, Download,
@@ -32,6 +32,7 @@ import { PdfPreviewSidebar } from './pdf-preview-sidebar';
 import { useToast } from '@/hooks/use-toast';
 
 export function ToolWorkspace({ tool }: { tool: ToolDef }) {
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   // Multi-file state with HTML5 Drag & Drop reordering & visual drop indicator line
@@ -316,44 +317,44 @@ export function ToolWorkspace({ tool }: { tool: ToolDef }) {
         case 'pdf-to-word': {
           const blob = await pdfToWord(firstFile, onProg);
           downloadBlob(blob, `${firstFile.name.replace('.pdf', '')}.docx`);
-          toast({ title: 'Converted to Word Document (.docx)! 📄', description: 'Reconstructed with Python layout engine.' });
+          toast({ title: 'Converted to Word Document (.docx)! 📄', description: 'Processed with our PDF engine.' });
           break;
         }
         case 'pdf-to-excel': {
           const blob = await pdfToExcel(firstFile, onProg);
           downloadBlob(blob, `${firstFile.name.replace('.pdf', '')}.xlsx`);
-          toast({ title: 'Extracted to Excel Spreadsheet (.xlsx)! 📊', description: 'Parsed table matrix with Python openpyxl engine.' });
+          toast({ title: 'Extracted to Excel Spreadsheet (.xlsx)! 📊', description: 'Processed with our PDF engine.' });
           break;
         }
         case 'pdf-to-ppt': {
           const blob = await pdfToPowerPoint(firstFile, onProg);
           downloadBlob(blob, `${firstFile.name.replace('.pdf', '')}.pptx`);
-          toast({ title: 'Converted to PowerPoint Slides (.pptx)! 📊', description: 'Created slides with Python python-pptx engine.' });
+          toast({ title: 'Converted to PowerPoint Slides (.pptx)! 📊', description: 'Processed with our PDF engine.' });
           break;
         }
         case 'pdf-to-markdown': {
           const mdText = await pdfToMarkdown(firstFile, onProg);
           const blob = new Blob([mdText], { type: 'text/markdown;charset=utf-8' });
           downloadBlob(blob, `${firstFile.name.replace('.pdf', '')}.md`);
-          toast({ title: 'Converted to Markdown (.md)! 📝', description: 'Formatted with Python pdfplumber engine.' });
+          toast({ title: 'Converted to Markdown (.md)! 📝', description: 'Processed with our PDF engine.' });
           break;
         }
         case 'word-to-pdf': {
           const bytes = await officeToPdf(firstFile, 'word', onProg);
           downloadBytes(bytes, `${firstFile.name.replace(/\.[^/.]+$/, '')}.pdf`);
-          toast({ title: 'Word Replica PDF Ready! 📄', description: 'Converted with Python high-fidelity engine.' });
+          toast({ title: 'Word Replica PDF Ready! 📄', description: 'Processed with our PDF engine.' });
           break;
         }
         case 'ppt-to-pdf': {
           const bytes = await officeToPdf(firstFile, 'ppt', onProg);
           downloadBytes(bytes, `${firstFile.name.replace(/\.[^/.]+$/, '')}.pdf`);
-          toast({ title: 'PowerPoint Converted to PDF! 📊', description: 'Rendered slides with Python ReportLab engine.' });
+          toast({ title: 'PowerPoint Converted to PDF! 📊', description: 'Processed with our PDF engine.' });
           break;
         }
         case 'excel-to-pdf': {
           const bytes = await officeToPdf(firstFile, 'excel', onProg);
           downloadBytes(bytes, `${firstFile.name.replace(/\.[^/.]+$/, '')}.pdf`);
-          toast({ title: 'Excel Converted to PDF! 📈', description: 'Formated sheet tables with Python openpyxl engine.' });
+          toast({ title: 'Excel Converted to PDF! 📈', description: 'Processed with our PDF engine.' });
           break;
         }
         case 'pdf-to-jpg': {
@@ -425,11 +426,11 @@ export function ToolWorkspace({ tool }: { tool: ToolDef }) {
 
           {/* SPECIAL TOOL VIEWS */}
           {tool.id === 'workflow' ? (
-            <WorkflowBuilder onClose={() => router.push('/')} />
+            <WorkflowBuilder onClose={() => navigate('/')} />
           ) : tool.id === 'word-counter' ? (
-            <WordCounter onBack={() => router.push('/')} />
+            <WordCounter onBack={() => navigate('/')} />
           ) : tool.id === 'text-copier' ? (
-            <TextCopier onBack={() => router.push('/')} />
+            <TextCopier onBack={() => navigate('/')} />
           ) : tool.id === 'scan-to-pdf' ? (
             <ScanToPdfPanel />
           ) : tool.id === 'sign' && files.length > 0 ? (

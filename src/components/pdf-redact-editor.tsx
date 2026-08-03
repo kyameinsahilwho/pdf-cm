@@ -316,7 +316,7 @@ export function PdfRedactEditor({ file, onBack }: { file: File; onBack?: () => v
     try {
       const bytes = await applyRedactions(file, redactions);
       downloadBytes(bytes, `redacted-${file.name}`);
-      toast({ title: 'PDF Sanitized & Redacted Successfully! 🛡️', description: `Permanently burned ${redactions.length} redaction area(s) with PyMuPDF stream purging.` });
+      toast({ title: 'PDF Sanitized & Redacted Successfully! 🛡️', description: `Permanently burned ${redactions.length} redaction area(s) with our PDF engine stream purging.` });
     } catch (err: any) {
       toast({ title: 'Redaction Burning Failed', description: err.message, variant: 'destructive' });
     } finally {
@@ -345,7 +345,7 @@ export function PdfRedactEditor({ file, onBack }: { file: File; onBack?: () => v
               {file.name}
             </h2>
             <span className="bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wide hidden sm:inline-block">
-              PyMuPDF Stream Sanitizer
+              Our PDF Engine Sanitizer
             </span>
           </div>
         </div>
@@ -411,7 +411,7 @@ export function PdfRedactEditor({ file, onBack }: { file: File; onBack?: () => v
       </div>
 
       {/* ── 2. FLOATING MODE & CONTROL TOOLBAR ── */}
-      <div className="flex items-center justify-between px-6 py-2.5 bg-slate-900/90 backdrop-blur border-b border-slate-800/80 shrink-0 flex-wrap gap-4">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-2 bg-slate-900/90 backdrop-blur border-b border-slate-800/80 shrink-0 overflow-x-auto no-scrollbar gap-3">
         {/* Tool Mode Buttons */}
         <div className="flex items-center gap-2">
           <button
@@ -495,14 +495,45 @@ export function PdfRedactEditor({ file, onBack }: { file: File; onBack?: () => v
         </div>
       </div>
 
-      {/* ── 3. MAIN WORKSPACE: CANVAS + SIDEBAR ── */}
+      {/* ── 3. MAIN WORKSPACE: SIDEBAR PAGES + CANVAS + INSPECTOR ── */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Left Thumbnails Sidebar */}
+        <div className="w-48 bg-slate-900 border-r border-slate-800 p-4 overflow-y-auto hidden md:flex flex-col gap-3 shrink-0">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <Layers className="w-3.5 h-3.5" /> Pages ({totalPages})
+          </div>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+            const countOnPage = redactions.filter((r) => r.page === p).length;
+            return (
+              <button
+                key={p}
+                onClick={() => setCurrentPage(p)}
+                className={`p-2.5 rounded-xl text-left border text-xs font-bold transition flex items-center justify-between ${
+                  currentPage === p
+                    ? 'bg-rose-600/20 border-rose-500 text-rose-400 shadow-md'
+                    : 'bg-slate-800/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>Page {p}</span>
+                  {countOnPage > 0 && (
+                    <span className="bg-rose-500/20 text-rose-300 text-[10px] px-1.5 py-0.2 rounded-full border border-rose-500/30">
+                      {countOnPage}
+                    </span>
+                  )}
+                </div>
+                {currentPage === p && <Check className="w-3.5 h-3.5 text-rose-400" />}
+              </button>
+            );
+          })}
+        </div>
+
         {/* CANVAS PREVIEW AREA */}
         <div className="flex-1 bg-slate-950 overflow-auto p-8 flex justify-center items-start relative select-none">
           {inspecting && (
             <div className="absolute top-4 left-4 z-20 bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-lg text-xs text-slate-300 flex items-center gap-2 backdrop-blur shadow-md">
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-rose-400" />
-              Scanning elements for PyMuPDF inspection...
+              Scanning elements with our PDF engine...
             </div>
           )}
 
@@ -759,7 +790,7 @@ export function PdfRedactEditor({ file, onBack }: { file: File; onBack?: () => v
             <div className="flex items-start gap-2 bg-slate-800/80 p-3 rounded-xl border border-slate-700">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
               <p className="leading-normal">
-                <strong>PyMuPDF Sanitization</strong> permanently purges stream content objects so text cannot be copied or recovered.
+                <strong>Our PDF Engine</strong> permanently purges stream content objects so text cannot be copied or recovered.
               </p>
             </div>
           </div>

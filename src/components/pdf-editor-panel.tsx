@@ -367,7 +367,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
         const arrayBuf = await res.arrayBuffer();
         const bytes = new Uint8Array(arrayBuf);
         downloadBytes(bytes, `edited-${file.name}`);
-        toast({ title: 'PDF Saved Successfully! ✍️', description: 'Applied high-fidelity PyMuPDF edits.' });
+        toast({ title: 'PDF Saved Successfully! ✍️', description: 'Applied edits with our PDF engine.' });
       } else {
         throw new Error('Server edit process failed');
       }
@@ -456,7 +456,7 @@ export function PdfEditorPanel({ file, onClose }: PdfEditorPanelProps) {
       </div>
 
       {/* ── TOOLBAR: INTERACTIVE FORMATTING CONTROLS ── */}
-      <div className="flex items-center justify-between px-6 py-2.5 bg-slate-900/90 border-b border-slate-800 shrink-0 flex-wrap gap-4">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-2 bg-slate-900/90 border-b border-slate-800 shrink-0 overflow-x-auto no-scrollbar gap-3">
         {/* Tool Mode Picker */}
         <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-2xl border border-slate-800">
           <button

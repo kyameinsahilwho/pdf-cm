@@ -72,8 +72,8 @@ export function PdfFusion() {
       </div>
 
       {/* ── CATEGORY FILTER TABS ── */}
-      <div className="flex flex-wrap items-center gap-1.5 mb-8 pb-3 border-b border-white/[0.06]">
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 mr-1">
+      <div className="flex items-center gap-1.5 mb-8 pb-3 border-b border-white/[0.06] overflow-x-auto no-scrollbar scroll-smooth shrink-0">
+        <span className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 mr-1 shrink-0">
           {filteredTools.length} {filteredTools.length === 1 ? 'tool' : 'tools'}
         </span>
 
@@ -83,7 +83,7 @@ export function PdfFusion() {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 shrink-0 ${
                 isActive
                   ? 'bg-white/[0.1] text-white border border-white/[0.12] shadow-sm'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] border border-transparent'
