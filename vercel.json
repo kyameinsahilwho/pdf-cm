@@ -2,10 +2,5 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "functions": {
-    "api/*.py": {
-      "maxDuration": 60
-    }
-  }
+  "installCommand": "npm install"
 }
