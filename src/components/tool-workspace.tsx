@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowLeft, FileUp, Zap, ArrowUp, ArrowDown, Trash2, Plus,
   RotateCw, Check, Sparkles, Layers, Download,
@@ -31,7 +32,6 @@ import { PdfPreviewSidebar } from './pdf-preview-sidebar';
 import { useToast } from '@/hooks/use-toast';
 
 export function ToolWorkspace({ tool }: { tool: ToolDef }) {
-  const router = useRouter();
   const { toast } = useToast();
 
   // Multi-file state with HTML5 Drag & Drop reordering & visual drop indicator line
@@ -400,7 +400,7 @@ export function ToolWorkspace({ tool }: { tool: ToolDef }) {
 
       {/* ── BREADCRUMB & HEADER ── */}
       <div className="flex flex-wrap items-center gap-3">
-        <Link href="/" className="btn-back">
+        <Link to="/" className="btn-back">
           <ArrowLeft className="w-3.5 h-3.5" /> All Tools
         </Link>
         <span className="text-slate-600">/</span>
