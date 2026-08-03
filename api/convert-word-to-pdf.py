@@ -343,19 +343,23 @@ def convert_docx_to_pdf_reportlab(input_path, output_path):
     return True
 
 
-def convert_word_to_pdf(input_path, output_path):
+def convert_word_to_pdf(input_path, output_path, allow_reportlab_fallback=False):
     """
     Main conversion entrypoint.
-    1. Tries native OS engines (docx2pdf / LibreOffice) for 100% exact replica if available.
-    2. Falls back to ReportLab + python-docx engine.
+    1. Tries native OS engines (MS Word / LibreOffice) for 100% exact replica.
+    2. If native conversion is unavailable and fallback is disabled, raises RuntimeError to prompt Render service setup.
     """
     print(f"[Word2PDF] Converting '{input_path}' to '{output_path}'...")
 
-    # Attempt native first
+    # Attempt native conversion first
     if try_native_conversion(input_path, output_path):
         return True
 
-    # Fallback to pure python engine
+    # Rule 6 & 7: Return JSON error if LibreOffice is unavailable instead of low-quality ReportLab fallback
+    if not allow_reportlab_fallback:
+        raise RuntimeError("LibreOffice conversion engine is unavailable on this server environment.")
+
+    # Fallback to pure python engine only if explicitly allowed
     try:
         return convert_docx_to_pdf_reportlab(input_path, output_path)
     except Exception as e:
@@ -379,6 +383,7 @@ class ServerlessHandler(BaseHTTPRequestHandler):
                 _, filename, input_bytes = parse_multipart(raw_data, boundary)
                 if not input_bytes:
                     self.send_response(400)
+                    self.send_header('Content-Type', 'application/json')
                     self.end_headers()
                     self.wfile.write(b'{"error": "Failed to parse file from multipart request"}')
                     return
@@ -413,12 +418,20 @@ class ServerlessHandler(BaseHTTPRequestHandler):
                 if os.path.exists(tmp_out_path):
                     os.remove(tmp_out_path)
 
+        except RuntimeError as err:
+            self.send_response(503)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            err_msg = f'{{"error": "{str(err)}"}}'
+            self.wfile.write(err_msg.encode('utf-8'))
+
         except Exception as err:
             self.send_response(500)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             err_msg = f'{{"error": "{str(err)}"}}'
             self.wfile.write(err_msg.encode('utf-8'))
+
 
     def do_GET(self):
         self.send_response(200)

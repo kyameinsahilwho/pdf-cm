@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: word-to-pdf-service
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MAX_FILE_SIZE_MB
+        value: "50"
+      - key: CONVERSION_TIMEOUT_SECONDS
+        value: "45"

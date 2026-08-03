@@ -14,7 +14,14 @@ reportlab>=4.0.0
 xhtml2pdf>=0.2.15
 Pillow>=10.0.0
 
+# ── RENDER DEDICATED CONVERSION SERVICE ──
+flask>=3.0.0
+gunicorn>=21.2.0
+python-multipart>=0.0.9
+requests>=2.31.0
+
 # ── LOCAL / SELF-HOSTED ONLY (require system binaries, NOT available on Vercel) ──
 # docx2pdf>=0.1.8     # requires MS Word or LibreOffice — local dev only
 # pytesseract>=0.3.10 # requires tesseract binary       — local dev only
 # pdf2image>=1.17.0   # requires poppler binary         — local dev only
+
