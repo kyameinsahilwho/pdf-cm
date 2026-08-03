@@ -152,3 +152,18 @@ th {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+a {
+  color: #9ab4ff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.workspace-page {
+  width: min(1200px, 98vw);
+  margin: 0 auto;
+  padding: 1rem 0 2rem;
+}

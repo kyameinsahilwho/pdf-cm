@@ -1,4 +1,4 @@
-import { TOOL_REGISTRY, type ToolDef } from '../data/tools'
+import { TOOL_REGISTRY, type ToolDef } from '@/lib/tools-data'
 
 const NETWORK_DELAY_MS = 120
 

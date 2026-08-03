@@ -6,18 +6,21 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import type { SortingState } from '@tanstack/react-table'
+import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { ToolWorkspace } from '@/components/tool-workspace'
+import { Toaster } from '@/components/ui/toaster'
+import { TOOL_REGISTRY, CATEGORIES, type CategoryId, type ToolDef } from '@/lib/tools-data'
 import { fetchTools } from './api/tools'
-import { CATEGORIES, type CategoryId, type ToolDef } from './data/tools'
 
 const columnHelper = createColumnHelper<ToolDef>()
 
 const columns = [
   columnHelper.accessor('name', {
     header: 'Tool',
-    cell: (info) => info.getValue(),
+    cell: (info) => <Link to={`/${info.row.original.slug}`}>{info.getValue()}</Link>,
   }),
   columnHelper.accessor('category', {
     header: 'Category',
@@ -37,7 +40,7 @@ const columns = [
   }),
 ]
 
-function App() {
+function ToolsListPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<CategoryId>('all')
   const [sorting, setSorting] = useState<SortingState>([{ id: 'name', desc: false }])
@@ -80,10 +83,8 @@ function App() {
     <main className="container">
       <header className="header">
         <p className="eyebrow">TanStack Port</p>
-        <h1>PDF CM tools powered by TanStack Query and TanStack Table</h1>
-        <p className="subtext">
-          Vite + React + TypeScript rebuild under <code>/tanstack</code> with client-side query and tabular exploration.
-        </p>
+        <h1>PDF CM tools</h1>
+        <p className="subtext">Choose any tool to open its full workspace implementation.</p>
       </header>
 
       <section className="controls">
@@ -179,6 +180,33 @@ function App() {
         ) : null}
       </section>
     </main>
+  )
+}
+
+function ToolWorkspacePage() {
+  const { slug } = useParams<{ slug: string }>()
+  const tool = TOOL_REGISTRY.find((item) => item.slug === slug)
+
+  if (!tool) {
+    return <Navigate to="/" replace />
+  }
+
+  return (
+    <main className="workspace-page">
+      <ToolWorkspace tool={tool} />
+    </main>
+  )
+}
+
+function App() {
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<ToolsListPage />} />
+        <Route path="/:slug" element={<ToolWorkspacePage />} />
+      </Routes>
+      <Toaster />
+    </>
   )
 }
 
