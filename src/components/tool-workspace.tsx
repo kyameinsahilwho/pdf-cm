@@ -8,7 +8,7 @@ import {
   RotateCw, Check, Sparkles, Layers, Download,
   GripVertical, AlertCircle, ChevronLeft, ChevronRight, Image as ImageIcon
 } from 'lucide-react';
-import { ToolDef } from '@/lib/tools-data';
+import { type ToolDef } from '@/lib/tools-data';
 import { ToolIcon, getToolGradient } from './tool-icon';
 import { WorkflowBuilder } from './workflow-builder';
 import { SignaturePanel, AiToolsPanel, ComparePanel, ScanToPdfPanel } from './interactive-tools';

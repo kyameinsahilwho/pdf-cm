@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Search, X, ArrowRight, ShieldCheck } from 'lucide-react';
-import { TOOL_REGISTRY, CATEGORIES, CategoryId } from '@/lib/tools-data';
+import { TOOL_REGISTRY, CATEGORIES, type CategoryId } from '@/lib/tools-data';
 import { ToolIcon, getToolGradient } from './tool-icon';
 
 export function PdfFusion() {

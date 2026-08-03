@@ -5,7 +5,7 @@ import {
   FileText, Search, BookOpen, Volume2, Copy, Check, Download, ArrowLeft,
   Sparkles, Sliders, AlertCircle, BarChart3, ChevronRight, HelpCircle
 } from 'lucide-react';
-import { extractText, ParseResult } from '@/lib/doc-parser';
+import { extractText, type ParseResult } from '@/lib/doc-parser';
 import { DropZone, ProgressBar } from './tool-view';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';

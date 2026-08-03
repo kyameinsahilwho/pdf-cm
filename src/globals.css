@@ -1,0 +1,280 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────
+   HIGH-CRAFT EDITORIAL SYSTEM
+   ───────────────────────────────────────────── */
+@layer base {
+  :root {
+    /* Palette: Obsidian Dark */
+    --bg-base:        228 28% 6%;     /* #0c0d12 */
+    --bg-surface:     226 22% 10%;    /* #131520 */
+    --bg-raised:      225 18% 15%;    /* #1c1e2d */
+    --bg-overlay:     224 16% 22%;    /* #282a3d */
+
+    /* Warm Accents */
+    --amber:          38 92% 50%;     /* #f59e0b */
+    --rose:           346 84% 61%;    /* #f43f5e */
+    --emerald:        158 64% 52%;    /* #34d399 */
+
+    /* Text Scale */
+    --text-primary:   35 20% 96%;     /* #fefefe */
+    --text-secondary: 215 15% 72%;    /* #9da9bb */
+    --text-muted:     215 12% 48%;    /* #627084 */
+
+    /* Borders */
+    --border:         224 16% 16%;
+    --border-bright:  224 18% 24%;
+
+    /* Aliases */
+    --background:     var(--bg-base);
+    --foreground:     var(--text-primary);
+    --card:           var(--bg-surface);
+    --card-foreground: var(--text-primary);
+    --popover:        var(--bg-raised);
+    --popover-foreground: var(--text-primary);
+    --primary:        var(--rose);
+    --primary-foreground: 0 0% 100%;
+    --secondary:      var(--bg-overlay);
+    --secondary-foreground: var(--text-secondary);
+    --muted:          var(--bg-raised);
+    --muted-foreground: var(--text-muted);
+    --accent:         var(--amber);
+    --accent-foreground: 0 0% 100%;
+    --radius:         0.75rem;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   BASE RESETS & TYPOGRAPHY
+   ───────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    @apply border-border box-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: #0c0d12;
+    color: hsl(var(--text-primary));
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Headings: Plus Jakarta Sans for clean structure */
+  h1, h2, h3, h4, .font-sans-head {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.025em;
+  }
+
+  /* Professional Italic Display Font: Instrument Serif */
+  .font-serif, .font-serif-italic {
+    font-family: 'Instrument Serif', serif;
+  }
+
+  /* Monospace for code/tech badges */
+  code, pre, .font-mono, kbd {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  ::selection {
+    background-color: rgba(245, 158, 11, 0.25);
+    color: #ffffff;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   COMPONENT LIBRARY
+   ───────────────────────────────────────────── */
+@layer components {
+
+  /* ── APP SHELL ── */
+  .app-shell {
+    @apply min-h-screen w-full flex flex-col relative;
+    background-color: #0c0d12;
+  }
+
+  /* Subtle Warm Ambient Glow */
+  .app-shell::before {
+    content: '';
+    @apply fixed top-0 left-1/2 -translate-x-1/2 pointer-events-none;
+    width: 100%;
+    max-width: 1100px;
+    height: 400px;
+    background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(245, 158, 11, 0.04) 0%, rgba(244, 63, 94, 0.03) 50%, transparent 80%);
+    z-index: 0;
+  }
+
+  .app-shell > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── FROSTED NAV ── */
+  .glass-nav {
+    @apply sticky top-0 z-50;
+    background: rgba(12, 13, 18, 0.85);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* ── TOOL CARD ── */
+  .tool-card {
+    @apply relative flex flex-col p-5 cursor-pointer overflow-hidden rounded-xl transition-all duration-200;
+    background: rgba(19, 21, 32, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.5);
+  }
+
+  .tool-card:hover {
+    transform: translateY(-2px);
+    background: rgba(28, 30, 45, 0.95);
+    border-color: rgba(245, 158, 11, 0.35);
+    box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.6);
+  }
+
+  /* ── TOOL ICON ── */
+  .tool-icon {
+    @apply relative flex items-center justify-center rounded-xl text-white transition-all duration-200 shadow-md;
+    width: 40px;
+    height: 40px;
+  }
+
+  .tool-card:hover .tool-icon {
+    transform: scale(1.05);
+  }
+
+  /* ── BUTTONS ── */
+  .btn-fun {
+    @apply relative font-mono font-medium text-white rounded-xl px-5 py-2.5
+           transition-all duration-150 select-none
+           flex items-center justify-center gap-2 text-xs uppercase tracking-wider shadow-md;
+    background: #f43f5e;
+  }
+
+  .btn-fun:hover:not(:disabled) {
+    background: #fb7185;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
+  }
+
+  .btn-fun:active:not(:disabled) {
+    transform: translateY(0);
+    background: #e11d48;
+  }
+
+  .btn-fun:disabled {
+    @apply opacity-40 cursor-not-allowed transform-none !important;
+  }
+
+  .btn-back {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg
+           transition-all duration-150 text-slate-300 bg-white/[0.04] border border-white/[0.08];
+  }
+
+  .btn-back:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+
+  /* ── SEARCH INPUT ── */
+  .search-input {
+    @apply w-full text-sm transition-all duration-200;
+    background: rgba(19, 21, 32, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #fefefe;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .search-input::placeholder {
+    color: #627084;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: rgba(245, 158, 11, 0.5);
+    background: rgba(28, 30, 45, 0.95);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(245, 158, 11, 0.12);
+  }
+
+  /* ── DROP ZONE ── */
+  .drop-zone {
+    @apply relative cursor-pointer transition-all duration-200 flex flex-col items-center justify-center p-8 text-center rounded-2xl;
+    border: 1.5px dashed rgba(255, 255, 255, 0.14);
+    background: rgba(19, 21, 32, 0.5);
+    min-height: 160px;
+  }
+
+  .drop-zone:hover {
+    border-color: rgba(245, 158, 11, 0.5);
+    background: rgba(245, 158, 11, 0.03);
+  }
+
+  /* ── CONTROL PANELS & FORM INPUTS ── */
+  .ctrl-section {
+    @apply rounded-xl p-4 space-y-3;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .ctrl-label {
+    @apply text-xs font-semibold block tracking-wide text-slate-400;
+  }
+
+  .form-input {
+    @apply w-full text-xs font-sans transition-all duration-150 rounded-lg;
+    background: rgba(12, 13, 18, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fefefe;
+    padding: 0.55rem 0.85rem;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.12);
+  }
+
+  .seg-btn {
+    @apply flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all duration-150 text-center;
+    color: #9da9bb;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .seg-btn.active {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #fbbf24;
+  }
+
+  .seg-btn:not(.active):hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: #fefefe;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(245, 158, 11, 0.5);
+  }
+}

@@ -6,7 +6,7 @@ import {
   Sparkles, Trash2, Check, Download, ShieldAlert, Layers, Crosshair,
   X, RefreshCw, Eye, MousePointer, ShieldCheck, FileText, Info
 } from 'lucide-react';
-import { applyRedactions, scanPdfForSensitiveText, RedactionArea } from '@/lib/engines/redact-engine';
+import { applyRedactions, scanPdfForSensitiveText, type RedactionArea } from '@/lib/engines/redact-engine';
 import { downloadBytes } from '@/lib/engines/core-pdf-engine';
 import { useToast } from '@/hooks/use-toast';
 

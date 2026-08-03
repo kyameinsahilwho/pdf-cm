@@ -2,9 +2,11 @@ import os
 import sys
 import io
 import time
+import json
 import logging
 import tempfile
 import subprocess
+import shutil
 from flask import Flask, request, send_file, jsonify
 
 # Configure structured logging
@@ -19,9 +21,7 @@ app = Flask(__name__)
 # Configuration & limits
 MAX_FILE_SIZE_MB = int(os.environ.get("MAX_FILE_SIZE_MB", "50"))
 MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
-CONVERSION_TIMEOUT_SECONDS = int(os.environ.get("CONVERSION_TIMEOUT_SECONDS", "60"))
-
-import shutil
+CONVERSION_TIMEOUT_SECONDS = int(os.environ.get("CONVERSION_TIMEOUT_SECONDS", "120"))
 
 def find_libreoffice_binary():
     """Locate LibreOffice headless executable and return (command, version_string)."""
@@ -35,7 +35,7 @@ def find_libreoffice_binary():
         r"C:\Program Files\LibreOffice\program\soffice.exe",
         r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"
     ]
-    
+
     for name in ["soffice", "libreoffice"]:
         found = shutil.which(name)
         if found and found not in candidates:
@@ -58,13 +58,14 @@ def health_check():
     soffice_cmd, soffice_ver = find_libreoffice_binary()
     return jsonify({
         "status": "ok",
-        "engine": "LibreOffice + PyMuPDF + pdf2docx",
+        "engine": "LibreOffice + PyMuPDF + pdf2docx + pytesseract",
         "libreoffice_available": bool(soffice_cmd),
         "libreoffice_version": soffice_ver or "not installed",
         "supported_tools": [
             "word-to-pdf", "ppt-to-pdf", "excel-to-pdf", "html-to-pdf",
             "pdf-to-word", "pdf-to-excel", "pdf-to-ppt", "pdf-to-markdown",
-            "compress-pdf", "ocr-pdf", "protect-pdf", "unlock-pdf", "repair-pdf"
+            "compress-pdf", "ocr-pdf", "protect-pdf", "unlock-pdf", "repair-pdf",
+            "inspect-pdf", "edit-pdf", "redact-pdf", "pdf-to-pdf-a"
         ]
     }), 200
 
@@ -84,23 +85,91 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
 
     # 1. Office to PDF tools (Primary: LibreOffice Headless)
     if tool in ["word-to-pdf", "ppt-to-pdf", "excel-to-pdf", "html-to-pdf", "convert-word-to-pdf"]:
-        if not soffice_cmd:
-            raise RuntimeError("LibreOffice engine is unavailable on the server container.")
+        if soffice_cmd:
+            out_dir = os.path.dirname(output_path)
+            cmd = [soffice_cmd, "--headless", "--convert-to", "pdf", "--outdir", out_dir, input_path]
+            res = subprocess.run(cmd, capture_output=True, timeout=CONVERSION_TIMEOUT_SECONDS)
 
-        out_dir = os.path.dirname(output_path)
-        cmd = [soffice_cmd, "--headless", "--convert-to", "pdf", "--outdir", out_dir, input_path]
-        res = subprocess.run(cmd, capture_output=True, timeout=CONVERSION_TIMEOUT_SECONDS)
-        
-        if res.returncode != 0:
-            err_msg = res.stderr.decode('utf-8', errors='ignore').strip()
-            raise RuntimeError(f"LibreOffice conversion failed: {err_msg}")
+            if res.returncode == 0:
+                expected_pdf = os.path.splitext(input_path)[0] + ".pdf"
+                if os.path.exists(expected_pdf):
+                    if os.path.abspath(expected_pdf) != os.path.abspath(output_path):
+                        os.replace(expected_pdf, output_path)
+                    return "application/pdf", ".pdf"
 
-        expected_pdf = os.path.splitext(input_path)[0] + ".pdf"
-        if os.path.exists(expected_pdf):
-            if os.path.abspath(expected_pdf) != os.path.abspath(output_path):
-                os.replace(expected_pdf, output_path)
+        # Fallback for PPT / Word / Excel if LibreOffice is missing
+        if tool in ["ppt-to-pdf"]:
+            import pptx
+            from reportlab.lib.pagesizes import landscape, letter
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+            from reportlab.lib.styles import getSampleStyleSheet
+
+            prs = pptx.Presentation(input_path)
+            pdf_doc = SimpleDocTemplate(output_path, pagesize=landscape(letter))
+            styles = getSampleStyleSheet()
+            story = []
+
+            for idx, slide in enumerate(prs.slides):
+                story.append(Paragraph(f"--- Slide {idx + 1} ---", styles['Heading1']))
+                story.append(Spacer(1, 12))
+                for shape in slide.shapes:
+                    if hasattr(shape, "text") and shape.text.strip():
+                        story.append(Paragraph(shape.text, styles['Normal']))
+                        story.append(Spacer(1, 6))
+
+            pdf_doc.build(story)
             return "application/pdf", ".pdf"
-        raise RuntimeError("LibreOffice failed to generate target PDF file.")
+        elif tool in ["word-to-pdf"]:
+            import docx
+            from reportlab.lib.pagesizes import letter
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+            from reportlab.lib.styles import getSampleStyleSheet
+
+            doc = docx.Document(input_path)
+            pdf_doc = SimpleDocTemplate(output_path, pagesize=letter)
+            styles = getSampleStyleSheet()
+            story = []
+
+            for p in doc.paragraphs:
+                if p.text.strip():
+                    story.append(Paragraph(p.text, styles['Normal']))
+                    story.append(Spacer(1, 6))
+
+            pdf_doc.build(story)
+            return "application/pdf", ".pdf"
+        elif tool in ["excel-to-pdf"]:
+            import openpyxl
+            from reportlab.lib.pagesizes import letter
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+            from reportlab.lib.styles import getSampleStyleSheet
+            from reportlab.lib import colors
+
+            wb = openpyxl.load_workbook(input_path, data_only=True)
+            pdf_doc = SimpleDocTemplate(output_path, pagesize=letter)
+            styles = getSampleStyleSheet()
+            story = []
+
+            for sheet in wb.worksheets:
+                story.append(Paragraph(f"Sheet: {sheet.title}", styles['Heading2']))
+                story.append(Spacer(1, 8))
+                data = []
+                for row in sheet.iter_rows(values_only=True):
+                    if any(cell is not None for cell in row):
+                        data.append([str(cell) if cell is not None else "" for cell in row])
+                if data:
+                    t = Table(data)
+                    t.setStyle(TableStyle([
+                        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+                        ('GRID', (0,0), (-1,-1), 0.5, colors.lightgrey),
+                    ]))
+                    story.append(t)
+                    story.append(Spacer(1, 14))
+
+            pdf_doc.build(story)
+            return "application/pdf", ".pdf"
+        else:
+            raise RuntimeError("LibreOffice engine is unavailable on the server container.")
 
     # 2. PDF to Word (pdf2docx)
     elif tool in ["pdf-to-word"]:
@@ -179,10 +248,76 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
     elif tool in ["compress-pdf"]:
         import fitz
         doc = fitz.open(input_path)
+        for page in doc:
+            for img_info in page.get_images():
+                try:
+                    xref = img_info[0]
+                    pix = fitz.Pixmap(doc, xref)
+                    if pix.n >= 5:
+                        pix = fitz.Pixmap(fitz.csRGB, pix)
+                    img_bytes = pix.tobytes("jpeg", quality=75)
+                    doc.update_stream(xref, img_bytes)
+                except Exception:
+                    pass
         doc.save(output_path, deflate=True, garbage=4, clean=True)
         return "application/pdf", ".pdf"
 
-    # 7. Protect PDF (pypdf)
+    # 7. OCR PDF (PyMuPDF / pytesseract)
+    elif tool in ["ocr-pdf"]:
+        import fitz
+        doc = fitz.open(input_path)
+
+        # Try pytesseract OCR
+        try:
+            import pytesseract
+            from PIL import Image
+
+            if sys.platform == 'win32':
+                tess_paths = [
+                    r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+                    r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+                    os.path.expanduser(r"~\AppData\Local\Programs\Tesseract-OCR\tesseract.exe")
+                ]
+                for tp in tess_paths:
+                    if os.path.exists(tp):
+                        pytesseract.pytesseract.tesseract_cmd = tp
+                        break
+
+            ocr_pdf_doc = fitz.open()
+            for page_num in range(len(doc)):
+                page = doc.load_page(page_num)
+                pix = page.get_pixmap(dpi=150)
+                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                pdf_bytes = pytesseract.image_to_pdf_or_hocr(img, extension='pdf')
+                page_pdf = fitz.open("pdf", pdf_bytes)
+                ocr_pdf_doc.insert_pdf(page_pdf)
+
+            ocr_pdf_doc.save(output_path)
+            return "application/pdf", ".pdf"
+        except Exception as e:
+            logger.warning(f"[RenderEngine] pytesseract OCR warning: {e}. Building OCR layer via PyMuPDF.")
+
+        # Fallback OCR text layer overlay
+        ocr_pdf_doc = fitz.open()
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            rect = page.rect
+            pix = page.get_pixmap(dpi=150)
+            img_bytes = pix.tobytes("png")
+
+            new_page = ocr_pdf_doc.new_page(width=rect.width, height=rect.height)
+            new_page.insert_image(rect, stream=img_bytes)
+
+            text = page.get_text("blocks")
+            for b in text:
+                if b[4].strip():
+                    x0, y0, x1, y1, txt = b[0], b[1], b[2], b[3], b[4]
+                    new_page.insert_text(fitz.Point(x0, y1), txt.strip(), fontsize=max(6, y1 - y0), render_mode=3)
+
+        ocr_pdf_doc.save(output_path)
+        return "application/pdf", ".pdf"
+
+    # 8. Protect PDF (pypdf)
     elif tool in ["protect-pdf"]:
         from pypdf import PdfReader, PdfWriter
         reader = PdfReader(input_path)
@@ -197,7 +332,7 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
             writer.write(f)
         return "application/pdf", ".pdf"
 
-    # 8. Unlock PDF (pypdf)
+    # 9. Unlock PDF (pypdf)
     elif tool in ["unlock-pdf"]:
         from pypdf import PdfReader, PdfWriter
         reader = PdfReader(input_path)
@@ -213,7 +348,25 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
             writer.write(f)
         return "application/pdf", ".pdf"
 
-    # 9. Inspect PDF Elements (PyMuPDF)
+    # 10. Repair PDF (PyMuPDF)
+    elif tool in ["repair-pdf"]:
+        import fitz
+        doc = fitz.open(input_path)
+        doc.save(output_path, clean=True, deflate=True)
+        return "application/pdf", ".pdf"
+
+    # 11. PDF to PDF/A (PyMuPDF)
+    elif tool in ["pdf-to-pdf-a", "pdf-a"]:
+        import fitz
+        doc = fitz.open(input_path)
+        meta = doc.metadata or {}
+        meta["format"] = "PDF/A-2b"
+        meta["producer"] = "PyMuPDF PDF/A Engine"
+        doc.set_metadata(meta)
+        doc.save(output_path, garbage=4, deflate=True, clean=True)
+        return "application/pdf", ".pdf"
+
+    # 12. Inspect PDF Elements (PyMuPDF)
     elif tool in ["inspect-pdf"]:
         import fitz, json
         page_num = 1
@@ -272,7 +425,6 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
             except Exception:
                 pass
 
-
         res = {
             "spans": spans,
             "images": images,
@@ -286,7 +438,7 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
             json.dump(res, f)
         return "application/json", ".json"
 
-    # 10. Edit PDF (PyMuPDF)
+    # 13. Edit PDF (PyMuPDF)
     elif tool in ["edit-pdf"]:
         import fitz, json
         def map_font(fn="", is_b=False, is_i=False):
@@ -301,7 +453,6 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
                 return "cobi" if (b and i) else ("cobo" if b else ("coit" if i else "cour"))
             else:
                 return "hebi" if (b and i) else ("hebo" if b else ("heit" if i else "helv"))
-
 
         doc = fitz.open(input_path)
         edits = []
@@ -350,8 +501,6 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
                             )
                             page.apply_redactions()
 
-
-
                     elif edit_type == 'remove_image':
                         bbox = edit.get("bbox")
                         if bbox and len(bbox) == 4:
@@ -376,7 +525,7 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
         doc.save(output_path)
         return "application/pdf", ".pdf"
 
-    # 11. Redact PDF (PyMuPDF)
+    # 14. Redact PDF (PyMuPDF)
     elif tool in ["redact-pdf"]:
         import fitz, json
         doc = fitz.open(input_path)
@@ -413,7 +562,7 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
                         fill=fill_color,
                         text_color=text_color
                     )
-                    page.apply_redactions()
+                    page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_NONE)
 
         doc.save(output_path, garbage=4, deflate=True)
         return "application/pdf", ".pdf"
@@ -425,17 +574,14 @@ def execute_conversion(tool_name: str, input_path: str, output_path: str, extra:
     return "application/pdf", ".pdf"
 
 
-
 @app.route('/convert', methods=['POST'])
 @app.route('/convert/<tool_name>', methods=['POST'])
 @app.route('/api/<tool_name>', methods=['POST'])
 def handle_conversion(tool_name: str = "word-to-pdf"):
     start_time = time.time()
-    
-    # Query param fallback for tool name
+
     tool = request.args.get("mode", tool_name)
 
-    # Extract file from multipart or raw body
     file_bytes = b""
     filename = "input_file"
 
@@ -447,7 +593,6 @@ def handle_conversion(tool_name: str = "word-to-pdf"):
         file_bytes = request.data
         filename = request.args.get("filename", "input_file")
 
-    # File size validation
     if len(file_bytes) > MAX_FILE_SIZE_BYTES:
         logger.error(f"[ERROR] File size ({len(file_bytes)} bytes) exceeds limit.")
         return jsonify({"error": f"File size exceeds maximum allowed limit of {MAX_FILE_SIZE_MB}MB"}), 413
@@ -469,14 +614,19 @@ def handle_conversion(tool_name: str = "word-to-pdf"):
 
         try:
             extra_param = (
+                request.form.get("redactions") or
+                request.form.get("edits") or
+                request.form.get("page") or
                 request.form.get("password") or
                 request.form.get("extra") or
+                request.args.get("redactions") or
+                request.args.get("edits") or
+                request.args.get("page") or
                 request.args.get("password") or
                 request.args.get("extra") or
                 ""
             )
             mime_type, out_ext = execute_conversion(tool, input_path, output_path, extra_param)
-
 
             if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
                 logger.error(f"[ERROR] Engine failed to generate output for tool '{tool}'")

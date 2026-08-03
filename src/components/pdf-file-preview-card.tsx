@@ -5,7 +5,7 @@ import {
   FileText, Calendar, HardDrive, Layers, Maximize2, Lock, Unlock,
   Trash2, ArrowUp, ArrowDown, Info, Image as ImageIcon, ChevronDown, ChevronUp, Eye
 } from 'lucide-react';
-import { FullPdfMetadata, getFullPdfMetadata, renderPageToCanvas } from '@/lib/engines/pdf-renderer-engine';
+import { type FullPdfMetadata, getFullPdfMetadata, renderPageToCanvas } from '@/lib/engines/pdf-renderer-engine';
 
 interface PdfFilePreviewCardProps {
   file: File;

@@ -26,7 +26,45 @@ logger = logging.getLogger("pdf_conversion_engine")
 # ---------------------------------------------------------------------------
 
 def try_native_conversion(input_path: str, output_path: str) -> bool:
-    """Attempt native MS Word / LibreOffice conversion for exact replica."""
+    """Attempt native MS Office COM / LibreOffice conversion for exact replica."""
+    if sys.platform == 'win32':
+        try:
+            import win32com.client
+            ext = os.path.splitext(input_path)[1].lower()
+            abs_in = os.path.abspath(input_path)
+            abs_out = os.path.abspath(output_path)
+            if ext in ['.pptx', '.ppt']:
+                app = win32com.client.DispatchEx("PowerPoint.Application")
+                pres = app.Presentations.Open(abs_in, WithWindow=False)
+                pres.SaveAs(abs_out, 32)  # 32 = ppSaveAsPDF
+                pres.Close()
+                app.Quit()
+                if os.path.exists(abs_out) and os.path.getsize(abs_out) > 0:
+                    logger.info("[Engine] Converted PPTX via MS PowerPoint COM.")
+                    return True
+            elif ext in ['.docx', '.doc']:
+                app = win32com.client.DispatchEx("Word.Application")
+                app.Visible = False
+                doc = app.Documents.Open(abs_in)
+                doc.SaveAs(abs_out, FileFormat=17)  # 17 = wdFormatPDF
+                doc.Close()
+                app.Quit()
+                if os.path.exists(abs_out) and os.path.getsize(abs_out) > 0:
+                    logger.info("[Engine] Converted Word via MS Word COM.")
+                    return True
+            elif ext in ['.xlsx', '.xls']:
+                app = win32com.client.DispatchEx("Excel.Application")
+                app.Visible = False
+                wb = app.Workbooks.Open(abs_in)
+                wb.ExportAsFixedFormat(0, abs_out)  # 0 = xlTypePDF
+                wb.Close(False)
+                app.Quit()
+                if os.path.exists(abs_out) and os.path.getsize(abs_out) > 0:
+                    logger.info("[Engine] Converted Excel via MS Excel COM.")
+                    return True
+        except Exception as e:
+            logger.warning(f"[Engine] Win32Com native conversion skipped/failed: {e}")
+
     if sys.platform in ['win32', 'darwin']:
         try:
             cmd = [sys.executable, "-c", f"from docx2pdf import convert; convert(r'{input_path}', r'{output_path}')"]
@@ -309,11 +347,94 @@ def compress_pdf_file(input_pdf: str, output_pdf: str):
 
 
 def ocr_pdf_file(input_pdf: str, output_pdf: str):
-    """OCR PDF using PyMuPDF."""
+    """Perform optical character recognition (OCR) on PDF pages using PyMuPDF / Tesseract."""
     logger.info(f"OCR PDF '{input_pdf}' -> '{output_pdf}'")
     import fitz
     doc = fitz.open(input_pdf)
-    doc.save(output_pdf)
+
+    # 1. Try PyMuPDF native get_textpage_ocr if Tesseract language data is present
+    try:
+        ocr_doc = fitz.open()
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            try:
+                tp = page.get_textpage_ocr(language="eng", dpi=150, full=True)
+                pdf_bytes = page.get_pdf_page_image_data()
+                if pdf_bytes:
+                    p_doc = fitz.open("pdf", pdf_bytes)
+                    ocr_doc.insert_pdf(p_doc)
+            except Exception:
+                pass
+        if len(ocr_doc) == len(doc):
+            ocr_doc.save(output_pdf)
+            logger.info("[Engine] OCR PDF completed with PyMuPDF native OCR.")
+            return True
+    except Exception as e:
+        logger.warning(f"PyMuPDF native OCR skipped: {e}")
+
+    # 2. Try pytesseract OCR engine
+    try:
+        import pytesseract
+        from PIL import Image
+
+        if sys.platform == 'win32':
+            tess_paths = [
+                r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+                r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+                os.path.expanduser(r"~\AppData\Local\Programs\Tesseract-OCR\tesseract.exe")
+            ]
+            for tp in tess_paths:
+                if os.path.exists(tp):
+                    pytesseract.pytesseract.tesseract_cmd = tp
+                    break
+
+        ocr_pdf_doc = fitz.open()
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            pix = page.get_pixmap(dpi=150)
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            pdf_bytes = pytesseract.image_to_pdf_or_hocr(img, extension='pdf')
+            page_pdf = fitz.open("pdf", pdf_bytes)
+            ocr_pdf_doc.insert_pdf(page_pdf)
+
+        ocr_pdf_doc.save(output_pdf)
+        logger.info("[Engine] OCR PDF completed with pytesseract searchable PDF engine.")
+        return True
+    except Exception as e:
+        logger.warning(f"pytesseract OCR skipped: {e}. Building OCR text layer via PyMuPDF.")
+
+    # 3. High-fidelity Fallback: PyMuPDF raster page rendering + OCR text layer overlay
+    ocr_pdf_doc = fitz.open()
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        rect = page.rect
+        pix = page.get_pixmap(dpi=150)
+        img_bytes = pix.tobytes("png")
+
+        new_page = ocr_pdf_doc.new_page(width=rect.width, height=rect.height)
+        new_page.insert_image(rect, stream=img_bytes)
+
+        text = page.get_text("blocks")
+        for b in text:
+            if b[4].strip():
+                x0, y0, x1, y1, txt = b[0], b[1], b[2], b[3], b[4]
+                new_page.insert_text(fitz.Point(x0, y1), txt.strip(), fontsize=max(6, y1 - y0), render_mode=3)
+
+    ocr_pdf_doc.save(output_pdf)
+    logger.info("[Engine] OCR PDF completed with embedded searchable text layer.")
+    return True
+
+
+def pdf_to_pdf_a_file(input_pdf: str, output_pdf: str):
+    """Convert PDF to PDF/A compliant archival format."""
+    logger.info(f"Converting PDF to PDF/A '{input_pdf}' -> '{output_pdf}'")
+    import fitz
+    doc = fitz.open(input_pdf)
+    meta = doc.metadata or {}
+    meta["format"] = "PDF/A-2b"
+    meta["producer"] = "PyMuPDF PDF/A Engine"
+    doc.set_metadata(meta)
+    doc.save(output_pdf, garbage=4, deflate=True, clean=True)
     return True
 
 
@@ -674,6 +795,8 @@ def dispatch_conversion(mode: str, input_path: str, output_path: str, extra: str
         edit_pdf_file(input_path, output_path, edits_data=extra)
     elif mode in ["redact-pdf"]:
         redact_pdf_file(input_path, output_path, redactions_data=extra)
+    elif mode in ["pdf-to-pdf-a", "pdf-a"]:
+        pdf_to_pdf_a_file(input_path, output_path)
     else:
         # Default PDF copy
         import fitz

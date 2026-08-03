@@ -6,7 +6,7 @@ import {
   Sparkles, ShieldCheck, Lock, Unlock, Crop, FileText, CheckCircle2,
   Sliders, Layers, RefreshCw
 } from 'lucide-react';
-import { renderPageToCanvas, PageViewportInfo } from '@/lib/engines/pdf-renderer-engine';
+import { renderPageToCanvas, type PageViewportInfo } from '@/lib/engines/pdf-renderer-engine';
 import { formatFileSize } from '@/lib/engines/pdf-renderer-engine';
 import { extractHtmlBlocks } from '@/lib/engines/html-to-pdf-layout';
 
