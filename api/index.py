@@ -814,12 +814,66 @@ class ServerlessHandler(BaseHTTPRequestHandler):
         try:
             content_length = int(self.headers.get('Content-Length', 0))
             mode = self.headers.get('X-Conversion-Mode', 'word-to-pdf')
-            path_parts = self.path.strip('/').split('/')
-            if len(path_parts) > 1 and path_parts[-1]:
+            path_clean = self.path.split('?')[0].strip('/')
+            path_parts = path_clean.split('/')
+            if len(path_parts) > 0 and path_parts[-1] not in ['api', 'index.py', '']:
                 mode = path_parts[-1]
 
             body = self.rfile.read(content_length)
 
+            # 1. Forward request to remote microservice if PDF_ENGINE_SERVICE_URL is configured
+            raw_service_url = (
+                os.environ.get('PDF_ENGINE_SERVICE_URL') or
+                os.environ.get('WORD_TO_PDF_SERVICE_URL') or
+                os.environ.get('RENDER_CONVERSION_SERVICE_URL') or
+                os.environ.get('VITE_PDF_ENGINE_SERVICE_URL') or
+                'https://api.codingmarvel.com'
+            )
+
+            if raw_service_url and raw_service_url.strip():
+                base_url = raw_service_url.strip().rstrip('/')
+                if not base_url.startswith('http://') and not base_url.startswith('https://'):
+                    base_url = f'https://{base_url}'
+
+                target_url = f'{base_url}/convert/{mode}'
+                logger.info(f"[Proxy] Forwarding mode '{mode}' to remote service: {target_url}")
+
+                try:
+                    import urllib.request
+                    import urllib.error
+
+                    content_type = self.headers.get('Content-Type', 'application/octet-stream')
+                    req_headers = {'Content-Type': content_type}
+
+                    req = urllib.request.Request(
+                        target_url,
+                        data=body,
+                        headers=req_headers,
+                        method='POST'
+                    )
+
+                    with urllib.request.urlopen(req, timeout=120) as resp:
+                        resp_body = resp.read()
+                        self.send_response(resp.status)
+                        out_ct = resp.headers.get('Content-Type', 'application/octet-stream')
+                        self.send_header('Content-Type', out_ct)
+                        if resp.headers.get('Content-Disposition'):
+                            self.send_header('Content-Disposition', resp.headers.get('Content-Disposition'))
+                        self.send_header('Content-Length', str(len(resp_body)))
+                        self.end_headers()
+                        self.wfile.write(resp_body)
+                        return
+                except urllib.error.HTTPError as http_err:
+                    err_body = http_err.read()
+                    self.send_response(http_err.code)
+                    self.send_header('Content-Type', http_err.headers.get('Content-Type', 'application/json'))
+                    self.end_headers()
+                    self.wfile.write(err_body)
+                    return
+                except Exception as proxy_err:
+                    logger.warning(f"[Proxy Warning] Remote service {target_url} failed: {proxy_err}. Falling back to local execution.")
+
+            # 2. Local execution fallback on Vercel
             with tempfile.NamedTemporaryFile(delete=False, suffix=".bin") as tmp_in:
                 tmp_in.write(body)
                 tmp_in_path = tmp_in.name
