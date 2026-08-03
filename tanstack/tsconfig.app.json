@@ -8,6 +8,7 @@
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
 
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -21,5 +22,5 @@
 
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "../src"]
+  "include": ["src"]
 }
