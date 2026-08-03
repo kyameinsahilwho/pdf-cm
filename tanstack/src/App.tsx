@@ -6,9 +6,9 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
   useReactTable,
 } from '@tanstack/react-table'
+import type { SortingState } from '@tanstack/react-table'
 import { fetchTools } from './api/tools'
 import { CATEGORIES, type CategoryId, type ToolDef } from './data/tools'
 
