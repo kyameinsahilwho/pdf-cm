@@ -1,0 +1,50 @@
+# Love for PDF — Full Technical Specification & LLM Knowledge Base
+
+> Website: https://codingmarvel.com
+> Architecture: Zero Server Storage & Client-Side WebAssembly Processing
+> License: Free Unlimited Access
+
+---
+
+## 1. Security & Privacy Model
+
+Unlike traditional online PDF portals that upload user files to remote cloud servers (AWS, Google Cloud), Love for PDF executes all PDF manipulation directly inside the user's web browser using WebAssembly (WASM), PDF-Lib, and unpdf engines.
+
+- **Zero File Uploads**: PDF bytes never leave the client's local memory for core tools (Merge, Split, Compress, Edit, Protect, Unlock, Watermark, Sign, Organize, Rotate, Crop, Form Fill).
+- **No Data Retention**: No server storage, databases, or third-party file retention logs.
+- **Offline Capability**: Progressive Web App (PWA) supported for offline usage.
+
+---
+
+## 2. Comprehensive Tool API & Workflow Reference
+
+### Organize & Edit Tools
+1. **Merge PDF** (`/merge-pdf`): Combines N PDF files into a single output file preserving vector graphics and bookmark outlines.
+2. **Split PDF** (`/split-pdf`): Extracts individual pages or custom ranges (e.g. `1-3, 5, 10-12`) into separate PDF files.
+3. **Compress PDF** (`/compress-pdf`): Applies stream deflation and image DPI downsampling (300 DPI -> 150 DPI) to achieve up to 80% file size reduction.
+4. **Edit PDF** (`/edit-pdf`): Interactive browser workspace to insert text layers, draw vector shapes, add image stamps, and annotate pages.
+5. **Organize PDF** (`/organize-pdf`): Drag-and-drop thumbnail grid interface to reorder pages, rotate individual sheets, or delete unwanted pages.
+6. **Protect PDF** (`/protect-pdf`): Applies AES-256 bit encryption with user passwords to prevent unauthorized document viewing.
+7. **Unlock PDF** (`/unlock-pdf`): Removes password restrictions from authorized encrypted PDF files.
+8. **Redact PDF** (`/redact-pdf`): Permanently removes underlying text and vector graphics streams behind bounding boxes to prevent unauthorized data recovery.
+9. **Watermark** (`/watermark`): Stamps custom text strings or logo graphics with opacity and rotation across all pages.
+10. **Rotate PDF** (`/rotate-pdf`): Permanently adjusts page orientation flags (90°, 180°, 270°).
+
+### Conversion Tools
+11. **PDF to Word** (`/pdf-to-word`): Converts PDF text, tables, and images into Microsoft Word `.docx` documents.
+12. **Word to PDF** (`/word-to-pdf`): Converts Microsoft Word `.doc`/`.docx` documents to standardized PDF.
+13. **PDF to Excel** (`/pdf-to-excel`): Extracts tabular data structures from PDF into Microsoft Excel `.xlsx` spreadsheets.
+14. **Excel to PDF** (`/excel-to-pdf`): Converts spreadsheet tables into printable PDF files.
+15. **PDF to PowerPoint** (`/pdf-to-powerpoint`): Converts PDF slide decks into editable `.pptx` presentation slides.
+16. **PowerPoint to PDF** (`/powerpoint-to-pdf`): Converts PPT/PPTX slideshows to shareable PDF.
+17. **PDF to JPG** (`/pdf-to-jpg`): Exports PDF pages as standalone high-resolution JPEG images.
+18. **JPG to PDF** (`/jpg-to-pdf`): Converts images (JPG, PNG, WebP) into a consolidated PDF file.
+19. **HTML to PDF** (`/html-to-pdf`): Renders raw HTML markup into PDF documents.
+20. **PDF to Markdown** (`/pdf-to-markdown`): Converts PDF text, headings, and lists to clean `.md` syntax.
+
+### AI & Smart Tools
+21. **OCR PDF** (`/ocr-pdf`): Applies Optical Character Recognition (OCR) to convert scanned images into searchable PDF text spans.
+22. **AI Summarizer** (`/ai-summarizer`): Generates concise executive summaries and bullet points from long PDF files.
+23. **Translate PDF** (`/translate-pdf`): Translates document text into 50+ languages while keeping original layout intact.
+24. **Word Counter** (`/word-counter`): Calculates word count, character count, sentence length, and readability scores.
+25. **Text Copier** (`/text-copier`): Extracts text into sequential word chunks formatted for AI prompts.

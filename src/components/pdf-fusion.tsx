@@ -1,7 +1,5 @@
-'use client';
-
 import React, { useState, useMemo } from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { Search, X, ArrowRight, ShieldCheck } from 'lucide-react';
 import { TOOL_REGISTRY, CATEGORIES, type CategoryId } from '@/lib/tools-data';
 import { ToolIcon, getToolGradient } from './tool-icon';
@@ -109,7 +107,7 @@ export function PdfFusion() {
           {filteredTools.map((tool, i) => (
             <Link
               key={tool.id}
-              href={`/${tool.slug}`}
+              to={`/${tool.slug}`}
               className="tool-card group animate-fade-up"
               style={{ animationDelay: `${Math.min(i * 20, 200)}ms` }}
             >

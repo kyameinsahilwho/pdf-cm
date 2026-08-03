@@ -3,11 +3,18 @@ import { Link } from 'react-router-dom';
 import { Header } from './header';
 import { TOOL_REGISTRY, CATEGORIES } from '@/lib/tools-data';
 import { BLOG_POSTS } from '@/lib/blogs-data';
+import { useSeoHead } from '@/lib/seo-helper';
 import { Map, FileText, Search, ExternalLink, Code, Layers } from 'lucide-react';
 
 export function SitemapPage() {
   const [search, setSearch] = useState('');
   const [viewXmlMode, setViewXmlMode] = useState(false);
+
+  useSeoHead({
+    title: 'Complete Sitemap & Tools Directory | Love for PDF',
+    description: 'Full directory listing all 35+ browser-based PDF tools, category guides, and technical comparison articles.',
+    canonicalUrl: 'https://codingmarvel.com/sitemap',
+  });
 
   const filteredTools = TOOL_REGISTRY.filter(
     (t) =>

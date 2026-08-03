@@ -4,11 +4,41 @@ import { Header } from './header';
 import { MarkdownRenderer } from './markdown-renderer';
 import { BLOG_POSTS } from '@/lib/blogs-data';
 import { TOOL_REGISTRY } from '@/lib/tools-data';
+import { useSeoHead } from '@/lib/seo-helper';
 import { Clock, Calendar, User, ArrowLeft, ExternalLink, Zap, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const post = BLOG_POSTS.find((p) => p.slug === slug);
+
+  useSeoHead({
+    title: post ? `${post.title} | Love for PDF` : 'Blog Article | Love for PDF',
+    description: post ? post.excerpt : 'Read PDF guides and technical comparison articles.',
+    keywords: post ? post.tags : ['pdf guide', 'pdf tools'],
+    canonicalUrl: post ? `https://codingmarvel.com/blog/${post.slug}` : 'https://codingmarvel.com/blog',
+    jsonLd: post
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'TechArticle',
+          headline: post.title,
+          description: post.excerpt,
+          author: {
+            '@type': 'Organization',
+            name: post.author,
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'Love for PDF',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://codingmarvel.com/favicon.svg',
+            },
+          },
+          datePublished: post.publishedAt,
+          mainEntityOfPage: `https://codingmarvel.com/blog/${post.slug}`,
+        }
+      : undefined,
+  });
 
   if (!post) {
     return <Navigate to="/404" replace />;

@@ -19,6 +19,7 @@ import { BlogPostPage } from '@/components/blog-post';
 import { Toaster } from './shims/toaster';
 import { TOOL_REGISTRY, CATEGORIES, type CategoryId, type ToolDef } from '@/lib/tools-data';
 import { getToolSeoContent } from '@/lib/tool-seo';
+import { useSeoHead } from '@/lib/seo-helper';
 import { fetchTools } from './api/tools';
 import { ShieldCheck, Table as TableIcon, LayoutGrid, FileText, ArrowLeft } from 'lucide-react';
 
@@ -235,6 +236,24 @@ function GlobalFooter() {
 function HomePage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
+  useSeoHead({
+    title: 'Love for PDF — 35+ Free & Secure Online PDF Tools',
+    description: 'Merge, split, compress, edit, convert, OCR, sign, and encrypt PDFs online with 100% client-side privacy and Zero Server Storage.',
+    keywords: ['pdf tools', 'online pdf', 'merge pdf', 'compress pdf', 'pdf to word', 'client side pdf'],
+    canonicalUrl: 'https://codingmarvel.com/',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Love for PDF',
+      url: 'https://codingmarvel.com/',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://codingmarvel.com/sitemap?q={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  });
+
   return (
     <div className="app-shell">
       <Header />
@@ -283,6 +302,29 @@ function ToolWorkspacePage() {
     return <Navigate to="/404" replace />;
   }
 
+  const seo = getToolSeoContent(tool);
+
+  useSeoHead({
+    title: seo.title,
+    description: seo.description,
+    keywords: seo.keywords,
+    canonicalUrl: `https://codingmarvel.com/${tool.slug}`,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: tool.name,
+      description: tool.desc,
+      url: `https://codingmarvel.com/${tool.slug}`,
+      applicationCategory: 'UtilityApplication',
+      operatingSystem: 'All',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+    },
+  });
+
   // Full-screen dedicated Studio layout for editor / workflow / redact tools
   const isStudioPage =
     ['edit-pdf', 'redact-pdf', 'create-workflow', 'sign-pdf'].includes(slug || '') ||
@@ -297,8 +339,6 @@ function ToolWorkspacePage() {
       </div>
     );
   }
-
-  const seo = getToolSeoContent(tool);
 
   return (
     <div className="app-shell">

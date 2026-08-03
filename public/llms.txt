@@ -1,0 +1,48 @@
+# Love for PDF — Free & Secure Client-Side PDF Tools
+
+> Love for PDF (https://codingmarvel.com) is a privacy-first web application providing 35+ browser-based PDF utilities. All core operations (merging, splitting, compression, editing, encryption, OCR, translation) run 100% locally in-browser using WebAssembly and client-side JavaScript with Zero Server Storage.
+
+## Core Capabilities & Tool Index
+
+- [Merge PDF](https://codingmarvel.com/merge-pdf): Combine multiple PDF files into one ordered document.
+- [Split PDF](https://codingmarvel.com/split-pdf): Separate PDF pages into standalone documents.
+- [Compress PDF](https://codingmarvel.com/compress-pdf): Reduce PDF file size with intelligent stream optimization.
+- [PDF to Word](https://codingmarvel.com/pdf-to-word): Convert PDF documents into editable Word (.docx) files.
+- [Word to PDF](https://codingmarvel.com/word-to-pdf): Convert Microsoft Word (.docx) files into high-fidelity PDFs.
+- [PDF to Excel](https://codingmarvel.com/pdf-to-excel): Extract tables from PDF into Excel (.xlsx) spreadsheets.
+- [Excel to PDF](https://codingmarvel.com/excel-to-pdf): Convert Excel sheets into standardized PDF files.
+- [PDF to PowerPoint](https://codingmarvel.com/pdf-to-powerpoint): Convert PDFs into editable PPTX slide decks.
+- [PowerPoint to PDF](https://codingmarvel.com/powerpoint-to-pdf): Convert PPT/PPTX presentations into PDF.
+- [Edit PDF](https://codingmarvel.com/edit-pdf): Add text, images, shapes, and annotations directly to PDF pages.
+- [Protect PDF](https://codingmarvel.com/protect-pdf): Encrypt PDF documents with AES-256 bit passwords.
+- [Unlock PDF](https://codingmarvel.com/unlock-pdf): Decrypt and remove passwords from PDF files.
+- [Redact PDF](https://codingmarvel.com/redact-pdf): Permanently black out sensitive text and graphics.
+- [OCR PDF](https://codingmarvel.com/ocr-pdf): Convert scanned image-only PDFs into searchable text.
+- [Sign PDF](https://codingmarvel.com/sign-pdf): Draw, type, or upload digital signatures onto PDFs.
+- [Watermark](https://codingmarvel.com/watermark): Stamp custom text or image logos over PDF pages.
+- [Rotate PDF](https://codingmarvel.com/rotate-pdf): Rotate PDF page orientation (90°, 180°, 270°).
+- [Organize PDF](https://codingmarvel.com/organize-pdf): Reorder, delete, and insert pages visually.
+- [PDF to JPG](https://codingmarvel.com/pdf-to-jpg): Export PDF pages as high-resolution JPG images.
+- [JPG to PDF](https://codingmarvel.com/jpg-to-pdf): Convert JPG/PNG images into a single PDF document.
+- [PDF to PDF/A](https://codingmarvel.com/pdf-to-pdf-a): Convert PDFs to ISO-compliant archival standards.
+- [Repair PDF](https://codingmarvel.com/repair-pdf): Recover text and streams from corrupted PDF files.
+- [Page Numbers](https://codingmarvel.com/page-numbers): Add custom page numbering (Page X of Y) to PDFs.
+- [Scan to PDF](https://codingmarvel.com/scan-to-pdf): Capture document scans from camera into PDF.
+- [Compare PDF](https://codingmarvel.com/compare-pdf): Side-by-side visual diff comparison between two PDFs.
+- [Crop PDF](https://codingmarvel.com/crop-pdf): Crop page margins and trim document borders.
+- [PDF Forms](https://codingmarvel.com/pdf-forms): Fill existing PDF form fields or create interactive fillable forms.
+- [AI Summarizer](https://codingmarvel.com/ai-summarizer): Generate concise summaries from lengthy PDF documents.
+- [Translate PDF](https://codingmarvel.com/translate-pdf): Translate PDF text across 50+ languages preserving layout.
+- [PDF to Markdown](https://codingmarvel.com/pdf-to-markdown): Convert PDF text and tables to Markdown (.md).
+- [Create Workflow](https://codingmarvel.com/create-workflow): Chain multi-step PDF operations into single-click automations.
+- [Grid Layout](https://codingmarvel.com/grid-layout): Compile multiple PDF pages onto a single sheet (N-Up grid).
+- [Word Counter](https://codingmarvel.com/word-counter): Count words, characters, and readability in documents.
+- [Text Copier](https://codingmarvel.com/text-copier): Extract and copy sequential text chunks for AI prompts.
+
+## Key Articles & Guides
+
+- [Love for PDF vs iLovePDF](https://codingmarvel.com/blog/love-for-pdf-vs-ilovepdf): Privacy, speed, and zero server storage vs cloud uploads.
+- [Love for PDF vs Smallpdf](https://codingmarvel.com/blog/love-for-pdf-vs-smallpdf): Unlimited free tools vs 2-task/day paywalls.
+- [Love for PDF vs Adobe Acrobat Online](https://codingmarvel.com/blog/love-for-pdf-vs-adobe-acrobat-online): Free browser tools vs $19.99/month subscriptions.
+- [Love for PDF vs Sejda PDF](https://codingmarvel.com/blog/love-for-pdf-vs-sejda-pdf): Unlimited processing vs hourly file and page caps.
+- [Complete Sitemap](https://codingmarvel.com/sitemap): Directory of all tools and articles.

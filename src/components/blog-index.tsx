@@ -2,11 +2,18 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from './header';
 import { BLOG_POSTS, type BlogPost } from '@/lib/blogs-data';
+import { useSeoHead } from '@/lib/seo-helper';
 import { BookOpen, Search, Clock, Tag, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 
 export function BlogIndexPage() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'guide' | 'comparison'>('all');
+
+  useSeoHead({
+    title: 'PDF Guides & Competitor Comparisons | Love for PDF Blog',
+    description: 'Technical guides, security best practices, and honest feature comparisons evaluating Love for PDF against iLovePDF, Smallpdf, Adobe Acrobat, and Sejda.',
+    canonicalUrl: 'https://codingmarvel.com/blog',
+  });
 
   const filteredPosts = BLOG_POSTS.filter((post) => {
     const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
