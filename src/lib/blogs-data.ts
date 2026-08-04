@@ -9,6 +9,9 @@ export interface BlogPost {
   tags: string[];
   relatedToolSlugs: string[];
   content: string; // Markdown or rich HTML
+  ogImage?: string;
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 export const BLOG_POSTS: BlogPost[] = [

@@ -16,31 +16,53 @@ function BlogPostContent() {
   const { slug } = useParams<{ slug: string }>();
   const { data: post, isLoading, isError } = useBlogPost(slug);
 
+  const articleOgImage = post?.ogImage || 'https://codingmarvel.com/favicon.svg';
+
   useSeoHead({
-    title: post ? `${post.title} | Love for PDF` : 'Blog Article | Love for PDF',
-    description: post ? post.excerpt : 'Read PDF guides and technical comparison articles.',
+    title: post ? (post.metaTitle || `${post.title} | Love for PDF`) : 'Blog Article | Love for PDF',
+    description: post ? (post.metaDescription || post.excerpt) : 'Read PDF guides and technical comparison articles on Love for PDF.',
     keywords: post ? post.tags : ['pdf guide', 'pdf tools'],
     canonicalUrl: post ? `https://codingmarvel.com/blog/${post.slug}` : 'https://codingmarvel.com/blog',
+    ogType: 'article',
+    ogImage: articleOgImage,
+    article: post
+      ? {
+          publishedTime: post.publishedAt,
+          modifiedTime: post.publishedAt,
+          author: post.author,
+          section: post.category,
+          tags: post.tags,
+        }
+      : undefined,
     jsonLd: post
       ? {
           '@context': 'https://schema.org',
-          '@type': 'TechArticle',
+          '@type': 'BlogPosting',
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `https://codingmarvel.com/blog/${post.slug}`,
+          },
           headline: post.title,
           description: post.excerpt,
+          image: [articleOgImage],
+          datePublished: post.publishedAt,
+          dateModified: post.publishedAt,
           author: {
             '@type': 'Organization',
             name: post.author,
+            url: 'https://codingmarvel.com',
           },
           publisher: {
             '@type': 'Organization',
             name: 'Love for PDF',
+            url: 'https://codingmarvel.com',
             logo: {
               '@type': 'ImageObject',
               url: 'https://codingmarvel.com/favicon.svg',
             },
           },
-          datePublished: post.publishedAt,
-          mainEntityOfPage: `https://codingmarvel.com/blog/${post.slug}`,
+          keywords: post.tags.join(', '),
+          articleSection: post.category,
         }
       : undefined,
   });
