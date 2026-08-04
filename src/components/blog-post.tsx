@@ -1,15 +1,20 @@
 import React from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
+import { HydrationBoundary, type DehydratedState } from '@tanstack/react-query';
 import { Header } from './header';
 import { MarkdownRenderer } from './markdown-renderer';
-import { BLOG_POSTS } from '@/lib/blogs-data';
+import { useBlogPost } from '@/hooks/use-blogs';
 import { TOOL_REGISTRY } from '@/lib/tools-data';
 import { useSeoHead } from '@/lib/seo-helper';
-import { Clock, Calendar, User, ArrowLeft, ExternalLink, Zap, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Clock, Calendar, User, ArrowLeft, ExternalLink, Zap } from 'lucide-react';
 
-export function BlogPostPage() {
+interface BlogPostPageProps {
+  dehydratedState?: DehydratedState;
+}
+
+function BlogPostContent() {
   const { slug } = useParams<{ slug: string }>();
-  const post = BLOG_POSTS.find((p) => p.slug === slug);
+  const { data: post, isLoading, isError } = useBlogPost(slug);
 
   useSeoHead({
     title: post ? `${post.title} | Love for PDF` : 'Blog Article | Love for PDF',
@@ -40,7 +45,31 @@ export function BlogPostPage() {
       : undefined,
   });
 
-  if (!post) {
+  if (isLoading) {
+    return (
+      <div className="app-shell min-h-screen">
+        <Header />
+        <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-pulse">
+          <div className="h-6 w-32 bg-white/[0.08] rounded" />
+          <div className="space-y-4 border-b border-white/[0.08] pb-6">
+            <div className="flex gap-2">
+              <div className="h-5 w-16 bg-amber-500/20 rounded-full" />
+              <div className="h-5 w-20 bg-amber-500/20 rounded-full" />
+            </div>
+            <div className="h-10 w-3/4 bg-white/[0.1] rounded" />
+            <div className="h-4 w-1/2 bg-white/[0.06] rounded" />
+          </div>
+          <div className="bg-[#131520]/60 border border-white/[0.08] p-8 rounded-2xl h-96 space-y-4">
+            <div className="h-4 w-full bg-white/[0.06] rounded" />
+            <div className="h-4 w-5/6 bg-white/[0.06] rounded" />
+            <div className="h-4 w-4/6 bg-white/[0.06] rounded" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (isError || !post) {
     return <Navigate to="/404" replace />;
   }
 
@@ -136,5 +165,13 @@ export function BlogPostPage() {
 
       </main>
     </div>
+  );
+}
+
+export function BlogPostPage({ dehydratedState }: BlogPostPageProps) {
+  return (
+    <HydrationBoundary state={dehydratedState}>
+      <BlogPostContent />
+    </HydrationBoundary>
   );
 }

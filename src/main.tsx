@@ -6,17 +6,12 @@ import { registerClientApiInterceptor } from './lib/client-api-interceptor'
 import './index.css'
 import App from './App'
 
+import { getQueryClient } from './lib/query-client'
+
 // Register client-side API interceptor for 100% offline/standalone execution
 registerClientApiInterceptor()
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      refetchOnWindowFocus: false,
-    },
-  },
-})
+const queryClient = getQueryClient()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
