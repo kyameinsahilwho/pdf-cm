@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Header } from './header';
 import { TOOL_REGISTRY, CATEGORIES } from '@/lib/tools-data';
 import { BLOG_POSTS } from '@/lib/blogs-data';
-import { useSeoHead, buildCollectionPageSchema, buildBreadcrumbSchema } from '@/lib/seo-helper';
+import { useSeoHead, buildCollectionPageSchema, buildBreadcrumbSchema, SITE_URL } from '@/lib/seo-helper';
 import { Map, FileText, Search, ExternalLink, Code, Layers } from 'lucide-react';
 
 export function SitemapPage() {
@@ -12,15 +12,15 @@ export function SitemapPage() {
 
   useSeoHead({
     title: 'Complete Sitemap & Tools Directory | Love for PDF',
-    description: 'Full directory listing all 35+ browser-based PDF tools, category guides, and technical comparison articles.',
-    canonicalUrl: 'https://codingmarvel.com/sitemap',
+    description: 'Full directory listing all 35 free PDF tools, category guides, and technical comparison articles.',
+    canonicalUrl: `${SITE_URL}/sitemap`,
     jsonLd: {
       '@context': 'https://schema.org',
       '@graph': [
         buildCollectionPageSchema({
           name: 'Complete Sitemap & Tools Directory | Love for PDF',
-          description: 'Full directory listing all 35+ browser-based PDF tools, category guides, and technical comparison articles.',
-          url: 'https://codingmarvel.com/sitemap',
+          description: 'Full directory listing all 35 free PDF tools, category guides, and technical comparison articles.',
+          url: `${SITE_URL}/sitemap`,
         }),
         buildBreadcrumbSchema([
           { name: 'Home', url: '/' },
@@ -47,30 +47,30 @@ export function SitemapPage() {
   const xmlSitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://codingmarvel.com/</loc>
+    <loc>${SITE_URL}/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/sitemap</loc>
+    <loc>${SITE_URL}/sitemap</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog</loc>
+    <loc>${SITE_URL}/blog</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 ${TOOL_REGISTRY.map(
   (t) => `  <url>
-    <loc>https://codingmarvel.com/${t.slug}</loc>
+    <loc>${SITE_URL}/${t.slug}</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>`
 ).join('\n')}
 ${BLOG_POSTS.map(
   (b) => `  <url>
-    <loc>https://codingmarvel.com/blog/${b.slug}</loc>
+    <loc>${SITE_URL}/blog/${b.slug}</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>`
@@ -91,10 +91,10 @@ ${BLOG_POSTS.map(
                 <span>INDEX & DIRECTORY</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Love for PDF — Complete Sitemap
+                Love for PDF: Complete Sitemap
               </h1>
               <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-                Explore all 30+ browser-based PDF tools, category guides, and comparison articles in one organized directory.
+                Explore all 35 free PDF tools, category guides, and comparison articles in one organized directory.
               </p>
             </div>
 

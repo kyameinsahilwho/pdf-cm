@@ -21,7 +21,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     slug: 'love-for-pdf-vs-ilovepdf',
     title: 'Love for PDF vs iLovePDF: Complete Feature, Speed & Privacy Comparison',
-    excerpt: 'An in-depth analysis comparing Love for PDF and iLovePDF across privacy, file size limits, conversion speed, and client-side processing.',
+    excerpt: 'An in-depth analysis comparing Love for PDF and iLovePDF across privacy, file size limits, conversion speed, and in-browser processing.',
     category: 'comparison',
     readTime: '6 min read',
     publishedAt: '2026-08-01',
@@ -42,9 +42,9 @@ In this breakdown, we compare both platforms across privacy, speed, file limits,
 The fundamental difference between Love for PDF and iLovePDF lies in where your documents are processed.
 
 - **iLovePDF**: Uploads your files to remote cloud servers. While files are automatically deleted after a specified period, your sensitive documents still travel across the public internet and land on third-party servers.
-- **Love for PDF**: Operates with a **Zero Server Storage & Client-Side First** model. Most core operations (merging, splitting, compressing, editing, encrypting) run 100% inside your local web browser engine using WebAssembly and high-performance JavaScript. Your files never leave your device unless dedicated microservice conversion is explicitly required.
+- **Love for PDF**: Works **browser first and never stores your files**. 18 of its 35 tools, including merge, split, rotate, crop, organize, watermark, sign and PDF to JPG, run entirely in your browser with pdf-lib and pdf.js, so the file never leaves your device. Tools that need heavier engines (Office conversions, OCR, compression, password protection, PDF/A and redaction) send the file to our conversion service, which processes it in a temporary folder and deletes it as soon as the result is returned.
 
-> **Winner for Privacy**: **Love for PDF** (Files remain on your device).
+> **Winner for Privacy**: **Love for PDF** (most tools never upload your file, and file contents are never kept on a server).
 
 ---
 
@@ -63,13 +63,13 @@ The fundamental difference between Love for PDF and iLovePDF lies in where your 
 
 Because traditional platforms upload every document to cloud servers before processing, conversion speed is bottlenecked by your internet upload bandwidth and server queues.
 
-Love for PDF processes documents instantaneously in local browser memory. Merging a 100-page PDF takes milliseconds on Love for PDF, whereas cloud-upload platforms require seconds or minutes depending on internet speed.
+Love for PDF's browser tools process documents directly in your browser's memory, with no upload step. Merging a 100-page PDF is typically near instant, whereas cloud-upload platforms need seconds or minutes depending on internet speed.
 
 ---
 
 ## 4. Summary & Recommendation
 
-If you frequently handle sensitive financial reports, legal contracts, or personal records, **Love for PDF** offers unmatched data security, zero file limits, and instant processing speeds—completely free without subscription popups.
+If you frequently handle sensitive financial reports, legal contracts, or personal records, **Love for PDF** keeps most work inside your browser, never stores your files, and stays completely free without subscription popups.
     `,
   },
   {
@@ -94,10 +94,10 @@ If you frequently handle sensitive financial reports, legal contracts, or person
 ### 1. Free Usage Restrictions
 Smallpdf enforces a strict 2-task-per-day limit on non-paying users. Once you hit this limit, you are blocked from processing additional files unless you purchase a monthly subscription.
 
-On **Love for PDF**, all tools—including PDF merging, splitting, compression, conversion, and encryption—are **100% free with no daily limits**.
+On **Love for PDF**, all tools, including PDF merging, splitting, compression, conversion, and password protection, are **completely free with no daily limits**.
 
 ### 2. Document Privacy & Data Retention
-Smallpdf uploads files to Amazon Web Services (AWS) data centers. In contrast, **Love for PDF** prioritizes client-side processing, ensuring your confidential document content remains localized on your computer or mobile device.
+Smallpdf uploads files to Amazon Web Services (AWS) data centers. In contrast, **Love for PDF** runs most tools (merge, split, organize, sign, watermark and more) right in your browser, so those files never leave your computer or phone. Conversions that need a server, such as Word, Excel and PowerPoint, are processed in a temporary folder and deleted as soon as the result is returned. File contents are never stored; only basic request logs are kept.
 
 ---
 
@@ -109,7 +109,7 @@ For users seeking a fast, secure, and unrestricted PDF workspace without paywall
   {
     slug: 'love-for-pdf-vs-adobe-acrobat-online',
     title: 'Love for PDF vs Adobe Acrobat Online: Free Browser Tools vs Expensive Subscriptions',
-    excerpt: 'Why pay for Adobe Acrobat Web when you can perform instant PDF conversions, edits, and merges directly in your browser for free?',
+    excerpt: 'Why pay for Adobe Acrobat Web when you can convert, edit, and merge PDFs online for free, with no account and most tools running right in your browser?',
     category: 'comparison',
     readTime: '7 min read',
     publishedAt: '2026-08-03',
@@ -126,8 +126,8 @@ Adobe Acrobat is the historical creator of the PDF file format. However, Adobe A
 ## Direct Feature Matrix
 
 - **Account Registration**: Adobe requires mandatory account sign-in. Love for PDF requires **no sign-in**.
-- **Cost**: Adobe Acrobat Pro costs $19.99/month. Love for PDF is **100% Free**.
-- **Offline Capability**: Love for PDF utilizes browser PWA technologies, allowing client-side tools to run even without active internet access.
+- **Cost**: Adobe Acrobat Pro costs $19.99/month. Love for PDF is **completely free**.
+- **Privacy**: Most Love for PDF tools run right in your browser with no upload, and files sent to the conversion service are deleted as soon as the result is returned.
 
 ---
 
@@ -144,14 +144,14 @@ Save money and work faster with **Love for PDF**. Enjoy professional document pr
     readTime: '5 min read',
     publishedAt: '2026-08-03',
     author: 'Love for PDF Technical Team',
-    tags: ['Comparison', 'Sejda', 'Unlimited', 'Client-Side'],
+    tags: ['Comparison', 'Sejda', 'Unlimited', 'Browser Tools'],
     relatedToolSlugs: ['split-pdf', 'redact-pdf', 'ocr-pdf'],
     content: `
 # Love for PDF vs Sejda PDF: Comparison Guide
 
 Sejda PDF is popular among power users, but enforces strict limitations: a maximum of 200 pages per document, 50MB file size caps, and a limit of 3 free tasks per hour.
 
-**Love for PDF** eliminates page limits and hourly caps by processing documents locally in your browser memory, enabling seamless workflows for heavy documents.
+**Love for PDF** has no page limits or hourly caps. Most of its tools process documents right in your browser, so even heavy documents are never uploaded, and server-based conversions accept files up to 50 MB.
     `,
   },
 
@@ -365,7 +365,7 @@ Turn raw spreadsheets into clean, professional PDF reports.
   {
     slug: 'how-to-edit-pdf-text-and-images',
     title: 'How to Edit PDF Text, Images, and Annotations Online',
-    excerpt: 'Modify text contents, insert images, draw shapes, and add electronic annotations directly on PDF pages in your browser.',
+    excerpt: 'Modify text contents, insert images, draw shapes, and add electronic annotations directly on PDF pages.',
     category: 'tool-guide',
     readTime: '5 min read',
     publishedAt: '2026-08-04',
@@ -540,13 +540,13 @@ Remove restrictions from PDFs when you have authorization.
   },
   {
     slug: 'how-to-encrypt-and-protect-pdf-with-password',
-    title: 'How to Password Protect & Encrypt PDF Files (AES-256)',
-    excerpt: 'Encrypt sensitive documents with military-grade AES-256 bit encryption to block unauthorized opening and copying.',
+    title: 'How to Password Protect & Encrypt PDF Files',
+    excerpt: 'Add an open password to sensitive documents so only people who know it can view them.',
     category: 'tool-guide',
     readTime: '5 min read',
     publishedAt: '2026-08-04',
     author: 'Cybersecurity Specialist',
-    tags: ['Protect PDF', 'AES-256', 'Encryption', 'Tutorial'],
+    tags: ['Protect PDF', 'Password', 'Encryption', 'Tutorial'],
     relatedToolSlugs: ['protect-pdf', 'unlock-pdf', 'redact-pdf'],
     content: `
 # How to Encrypt PDFs with Passwords
@@ -558,6 +558,8 @@ Secure financial statements, legal briefs, and personal documents with strong en
 2. Upload your PDF.
 3. Type a strong password.
 4. Click **Encrypt PDF** to download your password-secured file.
+
+> **Privacy Note**: Encryption runs on our conversion service. Your file and password are deleted as soon as the protected PDF is returned and neither is stored, so keep your password safe: it cannot be recovered.
     `,
   },
   {
@@ -734,6 +736,8 @@ Blacking out text with a drawing pen is unsafe. Permanent redaction strips under
 2. Load your document.
 3. Highlight text spans or draw bounding boxes over confidential data.
 4. Click **Apply Redactions & Save**.
+
+> **Privacy Note**: Removing the text under each redaction runs on our conversion service, which deletes your file as soon as the result is returned. If the service is unavailable, the browser fallback only covers content with black boxes, so try again later for sensitive documents.
     `,
   },
   {
@@ -782,8 +786,8 @@ Complete applications and surveys without printing.
   },
   {
     slug: 'how-to-summarize-pdf-documents-with-ai',
-    title: 'How to Summarize Long PDF Documents Using AI',
-    excerpt: 'Extract key points, executive summaries, and action items from lengthy PDF reports, research papers, and books.',
+    title: 'How to Pull Key Text From Long PDFs for a Summary',
+    excerpt: 'Use the AI Summarizer preview to extract text from the first pages of a long PDF so you can review or summarize it.',
     category: 'tool-guide',
     readTime: '5 min read',
     publishedAt: '2026-08-04',
@@ -791,21 +795,20 @@ Complete applications and surveys without printing.
     tags: ['AI Summarizer', 'AI Tools', 'PDF Insights', 'Tutorial'],
     relatedToolSlugs: ['ai-summarizer', 'translate-pdf', 'ocr-pdf'],
     content: `
-# How to Summarize PDFs with AI
+# How to Summarize PDFs (Preview)
 
-Save time reading 50-page reports by generating instant bulleted summaries.
+The AI Summarizer is an early preview. It runs in your browser and extracts text from the first pages of your PDF, with a short snapshot of the content. No AI model is connected yet, so it does not write a full summary.
 
 ## Steps:
 1. Open [AI Summarizer](/ai-summarizer).
 2. Upload your PDF report or article.
-3. Select summary length (Concise, Executive, Bullet Points).
-4. Click **Generate Summary**.
+3. Click **Generate AI Summary** and download the extracted text as a .txt file.
     `,
   },
   {
     slug: 'how-to-translate-pdf-documents-online',
-    title: 'How to Translate PDF Documents While Preserving Layout',
-    excerpt: 'Translate PDF text across 50+ languages while keeping original fonts, tables, and page layout untouched.',
+    title: 'How to Prepare PDF Text for Translation',
+    excerpt: 'Use the Translate PDF preview to extract text from the first pages of a PDF so you can translate it.',
     category: 'tool-guide',
     readTime: '5 min read',
     publishedAt: '2026-08-04',
@@ -815,13 +818,13 @@ Save time reading 50-page reports by generating instant bulleted summaries.
     content: `
 # How to Translate PDF Documents Online
 
-Translate documents accurately without breaking layout structure.
+Translate PDF is an early preview. It runs in your browser and extracts text from the first pages of your PDF so you can paste it into a translator. No AI model is connected yet, so the text is not translated for you and the layout is not kept.
 
 ## Steps:
 1. Go to [Translate PDF](/translate-pdf).
 2. Upload your source PDF file.
-3. Choose source and target language (e.g. English -> Spanish).
-4. Click **Translate PDF** and download your translated document.
+3. Choose a target language.
+4. Click **Translate PDF to [language]** and copy the extracted text into the translator you prefer.
     `,
   },
   {

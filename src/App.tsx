@@ -27,8 +27,10 @@ import {
   buildHowToSchema,
   buildFaqSchema,
   buildBreadcrumbSchema,
+  SITE_URL,
 } from '@/lib/seo-helper';
 import { fetchTools } from './api/tools';
+import { ToolPrivacyBadge } from './components/tool-privacy-badge';
 import { ShieldCheck, Table as TableIcon, LayoutGrid, FileText, ArrowLeft } from 'lucide-react';
 
 const columnHelper = createColumnHelper<ToolDef>();
@@ -55,6 +57,10 @@ const columns = [
     cell: (info) => (
       <span className="text-xs text-amber-400 font-mono font-medium">{info.getValue() ?? '—'}</span>
     ),
+  }),
+  columnHelper.accessor('processing', {
+    header: 'Where it runs',
+    cell: (info) => <ToolPrivacyBadge tool={info.row.original} size="short" />,
   }),
   columnHelper.accessor('accept', {
     header: 'Accepted Files',
@@ -116,7 +122,7 @@ function ToolsTanStackTable() {
               Table View
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Interactive client-side data table with sorting, search filtering, and pagination.
+              Every tool with sorting, search, filters, and where each one processes your file.
             </p>
           </div>
           <input
@@ -226,7 +232,7 @@ function GlobalFooter() {
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <span className="flex items-center gap-1.5 text-xs text-slate-500">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          Zero Server Storage • Files never leave your browser • 100% Client-Side Privacy
+          Files are never stored • Most tools run right in your browser, no upload
         </span>
         <div className="flex items-center gap-4 text-xs font-mono text-slate-400">
           <Link to="/" className="hover:text-white transition-colors">All Tools</Link>
@@ -245,10 +251,10 @@ function HomePage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   useSeoHead({
-    title: 'Love for PDF — 35+ Free & Secure Online PDF Tools',
-    description: 'Merge, split, compress, edit, convert, OCR, sign, and encrypt PDFs online with 100% client-side privacy and Zero Server Storage.',
-    keywords: ['pdf tools', 'online pdf', 'merge pdf', 'compress pdf', 'pdf to word', 'client side pdf'],
-    canonicalUrl: 'https://codingmarvel.com/',
+    title: 'Love for PDF | Free Online PDF Tools, Most Run in Your Browser',
+    description: 'Merge, split, compress, edit, convert, OCR, sign, and password-protect PDFs online for free. Most tools run right in your browser with no upload, and files are never stored.',
+    keywords: ['pdf tools', 'online pdf', 'merge pdf', 'compress pdf', 'pdf to word', 'pdf tools no upload'],
+    canonicalUrl: `${SITE_URL}/`,
     jsonLd: {
       '@context': 'https://schema.org',
       '@graph': [
@@ -312,7 +318,7 @@ function ToolWorkspacePage() {
     title: seo.title,
     description: seo.description,
     keywords: seo.keywords,
-    canonicalUrl: `https://codingmarvel.com/${tool.slug}`,
+    canonicalUrl: `${SITE_URL}/${tool.slug}`,
     jsonLd: {
       '@context': 'https://schema.org',
       '@graph': [

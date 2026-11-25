@@ -68,7 +68,7 @@ export function Header() {
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[11px] font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Zero Server Storage • 100% Client-Side</span>
+            <span>Files never stored • Most tools run in your browser</span>
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export function Header() {
           <div className="pt-2 border-t border-white/[0.08]">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[11px] font-medium w-full justify-center">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Zero Server Storage • 100% Privacy</span>
+              <span>Files never stored • Most tools run in your browser</span>
             </div>
           </div>
         </div>

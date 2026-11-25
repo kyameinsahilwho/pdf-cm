@@ -5,8 +5,9 @@ import {
   RotateCw, Check, Sparkles, Layers, Download,
   GripVertical, AlertCircle, ChevronLeft, ChevronRight, Image as ImageIcon
 } from 'lucide-react';
-import { type ToolDef } from '@/lib/tools-data';
+import { type ToolDef, getToolPrivacy } from '@/lib/tools-data';
 import { ToolIcon, getToolGradient } from './tool-icon';
+import { ToolPrivacyBadge } from './tool-privacy-badge';
 import { WorkflowBuilder } from './workflow-builder';
 import { SignaturePanel, AiToolsPanel, ComparePanel, ScanToPdfPanel } from './interactive-tools';
 import { WordCounter } from './word-counter';
@@ -259,7 +260,7 @@ export function ToolWorkspace({ tool }: { tool: ToolDef }) {
         case 'protect': {
           const bytes = await protectPdf(firstFile, password, onProg);
           downloadBytes(bytes, `protected-${firstFile.name}`);
-          toast({ title: 'PDF Encrypted & Protected! 🔒' });
+          toast({ title: 'Protected PDF Ready 🔒', description: 'Open the file and check that it asks for your password before you share it.' });
           break;
         }
         case 'unlock': {
@@ -416,6 +417,7 @@ export function ToolWorkspace({ tool }: { tool: ToolDef }) {
             {tool.name}
           </h1>
         </div>
+        <ToolPrivacyBadge tool={tool} className="sm:ml-auto" />
       </div>
 
       {/* ── WORKSTATION LAYOUT ── */}
@@ -469,7 +471,7 @@ export function ToolWorkspace({ tool }: { tool: ToolDef }) {
                       ? `Drop more files — ${files.length} selected`
                       : `Drop files here or click to browse`}
                   </p>
-                  <p className="text-xs mt-1 text-slate-500">100% Client-side processing • Files stay on your device</p>
+                  <p className="text-xs mt-1 text-slate-500 max-w-md text-center">{getToolPrivacy(tool).detail}</p>
                 </div>
               )}
 
@@ -871,7 +873,7 @@ export function ToolWorkspace({ tool }: { tool: ToolDef }) {
                   </div>
                   <div className="flex items-start gap-2 p-3 rounded-lg text-xs leading-relaxed bg-amber-500/10 border border-amber-500/25 text-amber-300">
                     <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-400" />
-                    <p>Password encrypted in-browser. Zero server storage. Cannot be recovered if lost.</p>
+                    <p>Your PDF and password are sent to our conversion service for encryption and deleted as soon as the protected file is returned. We never store them, so a lost password cannot be recovered.</p>
                   </div>
                 </div>
               )}

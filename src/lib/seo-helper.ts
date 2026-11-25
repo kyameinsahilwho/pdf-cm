@@ -25,7 +25,7 @@ export function updateSeoTags({
   keywords,
   canonicalUrl,
   ogType = 'website',
-  ogImage = 'https://codingmarvel.com/favicon.svg',
+  ogImage = SITE_LOGO,
   article,
   jsonLd,
 }: SeoProps) {
@@ -147,9 +147,9 @@ export function useSeoHead(props: SeoProps) {
 // Schema.org JSON-LD Builders
 // ==========================================
 
-export const SITE_URL = 'https://codingmarvel.com';
+export const SITE_URL = 'https://pdf.codingmarvel.com';
 export const SITE_NAME = 'Love for PDF';
-export const SITE_LOGO = 'https://codingmarvel.com/favicon.svg';
+export const SITE_LOGO = `${SITE_URL}/favicon.svg`;
 
 export interface BreadcrumbItem {
   name: string;
@@ -186,7 +186,7 @@ export function buildWebSiteSchema() {
     '@id': `${SITE_URL}/#website`,
     url: SITE_URL,
     name: SITE_NAME,
-    description: 'Complete Client-Side PDF Toolkit. 100% Free, Private & Secure PDF Tools running entirely in your browser.',
+    description: 'Free online PDF toolkit with 35 tools. Most run right in your browser with no upload; Office, OCR and a few other conversions use our conversion service, which deletes each file as soon as the result is returned.',
     publisher: {
       '@id': `${SITE_URL}/#organization`,
     },

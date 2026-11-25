@@ -1,4 +1,4 @@
-import type { ToolDef } from '@/lib/tools-data';
+import { getToolPrivacy, type ToolDef } from '@/lib/tools-data';
 
 export interface FaqItem {
   question: string;
@@ -14,7 +14,7 @@ export interface ToolSeoContent {
   faq: FaqItem[];
 }
 
-const CORE_KEYWORDS = ['pdf tool', 'online pdf', 'secure pdf tools', 'client side pdf'];
+const CORE_KEYWORDS = ['pdf tool', 'online pdf', 'free pdf tools', 'secure pdf tools'];
 
 const CATEGORY_KEYWORDS: Record<ToolDef['category'], string[]> = {
   all: ['all pdf tools', 'pdf utilities'],
@@ -27,8 +27,8 @@ const CATEGORY_KEYWORDS: Record<ToolDef['category'], string[]> = {
 };
 
 const CATEGORY_BENEFITS: Record<ToolDef['category'], string[]> = {
-  all: ['Fast browser-based processing', 'No file retention on servers', 'Consistent output quality'],
-  organize: ['Rearrange and edit documents quickly', 'Keep PDF formatting intact', 'Run tasks entirely in-browser'],
+  all: ['Free with no account or sign-up', 'Consistent output quality'],
+  organize: ['Rearrange and edit documents quickly', 'Keep PDF formatting intact'],
   'convert-from': ['Export PDF content to practical formats', 'Preserve structure and readability', 'Save time on manual copy work'],
   'convert-to': ['Create standardized PDFs from source files', 'Share universally compatible files', 'Control file output without extra software'],
   forms: ['Collect signatures and form data faster', 'Prepare professional documents', 'Avoid printing and rescanning'],
@@ -37,8 +37,20 @@ const CATEGORY_BENEFITS: Record<ToolDef['category'], string[]> = {
 };
 
 export function getToolSeoContent(tool: ToolDef): ToolSeoContent {
-  const title = `${tool.name} Online — Free, Private & SEO Optimized | Love for PDF`;
-  const description = `${tool.desc} Use ${tool.name} online with secure browser processing and no permanent file storage.`;
+  const privacy = getToolPrivacy(tool);
+  const inBrowser = privacy.processing === 'browser';
+
+  const title = inBrowser
+    ? `${tool.name} Online: Free, Runs in Your Browser | Love for PDF`
+    : `${tool.name} Online: Free, No Sign-up | Love for PDF`;
+
+  const description = inBrowser
+    ? `${tool.desc} ${tool.name} runs right in your browser, so your file is never uploaded.`
+    : `${tool.desc} Free, with no sign-up. Files are processed on our server and deleted as soon as the result is returned.`;
+
+  const privacyBenefit = inBrowser
+    ? 'Runs entirely in your browser, so your file is never uploaded'
+    : 'Files are deleted from our server as soon as the result is returned';
 
   return {
     title,
@@ -48,22 +60,23 @@ export function getToolSeoContent(tool: ToolDef): ToolSeoContent {
       tool.slug,
       ...CATEGORY_KEYWORDS[tool.category],
       ...CORE_KEYWORDS,
+      ...(inBrowser ? ['client side pdf', 'pdf tool no upload'] : []),
     ],
     steps: [
       `Open the ${tool.name} tool page.`,
-      tool.accept ? `Upload your ${tool.accept} file(s).` : 'Provide your source content.',
+      tool.accept ? `Choose your ${tool.accept} file(s).` : 'Provide your source content.',
       'Configure the available options for your output.',
       'Run the tool and download the processed file instantly.',
     ],
-    benefits: CATEGORY_BENEFITS[tool.category],
+    benefits: [...CATEGORY_BENEFITS[tool.category], privacyBenefit],
     faq: [
       {
         question: `Is ${tool.name} free to use?`,
-        answer: `Yes. ${tool.name} is available on Love for PDF with a free browser-based workflow.`,
+        answer: `Yes. ${tool.name} is free on Love for PDF, with no account or sign-up.`,
       },
       {
-        question: `Is ${tool.name} secure?`,
-        answer: `Files are processed with a privacy-focused flow and are not stored permanently on our servers.`,
+        question: `Does ${tool.name} upload my file?`,
+        answer: `${inBrowser ? 'No.' : tool.id === 'workflow' ? 'Only for some steps.' : 'Yes, briefly.'} ${privacy.detail}`,
       },
       {
         question: `How fast is ${tool.name}?`,

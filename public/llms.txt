@@ -1,48 +1,55 @@
-# Love for PDF — Free & Secure Client-Side PDF Tools
+# Love for PDF: Free Online PDF Tools
 
-> Love for PDF (https://codingmarvel.com) is a privacy-first web application providing 35+ browser-based PDF utilities. All core operations (merging, splitting, compression, editing, encryption, OCR, translation) run 100% locally in-browser using WebAssembly and client-side JavaScript with Zero Server Storage.
+> Love for PDF (https://pdf.codingmarvel.com) is a free web app with 35 PDF tools and no account or sign-up. 18 tools run entirely in the browser with pdf-lib and pdf.js, so the file is never uploaded. The other tools send the file to a conversion service (headless LibreOffice and Python), which processes it in a temporary folder and deletes it as soon as the result is returned. File contents are never stored; the service keeps only basic request logs, such as the file name and size.
+
+## Where each tool runs
+
+- Runs in your browser, never uploaded: Merge, Split, Organize, Rotate, Crop, Watermark, Page Numbers, Grid Layout, Compare, PDF to JPG, JPG to PDF, Scan to PDF, Sign, PDF Forms, Word Counter, Text Copier, AI Summarizer (preview), Translate PDF (preview).
+- Processed on the conversion service, with a browser fallback if it is down: Compress, Edit, Redact, Protect, Unlock, Repair, PDF to PDF/A, HTML to PDF, Create Workflow (only its compress, protect, PDF/A and repair steps). The protect, unlock and PDF/A fallbacks only re-save the file, and the redact fallback only covers content visually.
+- Processed on the conversion service: PDF to Word, PDF to Excel, PDF to PowerPoint, PDF to Markdown, Word to PDF, Excel to PDF, PowerPoint to PDF, OCR PDF.
 
 ## Core Capabilities & Tool Index
 
-- [Merge PDF](https://codingmarvel.com/merge-pdf): Combine multiple PDF files into one ordered document.
-- [Split PDF](https://codingmarvel.com/split-pdf): Separate PDF pages into standalone documents.
-- [Compress PDF](https://codingmarvel.com/compress-pdf): Reduce PDF file size with intelligent stream optimization.
-- [PDF to Word](https://codingmarvel.com/pdf-to-word): Convert PDF documents into editable Word (.docx) files.
-- [Word to PDF](https://codingmarvel.com/word-to-pdf): Convert Microsoft Word (.docx) files into high-fidelity PDFs.
-- [PDF to Excel](https://codingmarvel.com/pdf-to-excel): Extract tables from PDF into Excel (.xlsx) spreadsheets.
-- [Excel to PDF](https://codingmarvel.com/excel-to-pdf): Convert Excel sheets into standardized PDF files.
-- [PDF to PowerPoint](https://codingmarvel.com/pdf-to-powerpoint): Convert PDFs into editable PPTX slide decks.
-- [PowerPoint to PDF](https://codingmarvel.com/powerpoint-to-pdf): Convert PPT/PPTX presentations into PDF.
-- [Edit PDF](https://codingmarvel.com/edit-pdf): Add text, images, shapes, and annotations directly to PDF pages.
-- [Protect PDF](https://codingmarvel.com/protect-pdf): Encrypt PDF documents with AES-256 bit passwords.
-- [Unlock PDF](https://codingmarvel.com/unlock-pdf): Decrypt and remove passwords from PDF files.
-- [Redact PDF](https://codingmarvel.com/redact-pdf): Permanently black out sensitive text and graphics.
-- [OCR PDF](https://codingmarvel.com/ocr-pdf): Convert scanned image-only PDFs into searchable text.
-- [Sign PDF](https://codingmarvel.com/sign-pdf): Draw, type, or upload digital signatures onto PDFs.
-- [Watermark](https://codingmarvel.com/watermark): Stamp custom text or image logos over PDF pages.
-- [Rotate PDF](https://codingmarvel.com/rotate-pdf): Rotate PDF page orientation (90°, 180°, 270°).
-- [Organize PDF](https://codingmarvel.com/organize-pdf): Reorder, delete, and insert pages visually.
-- [PDF to JPG](https://codingmarvel.com/pdf-to-jpg): Export PDF pages as high-resolution JPG images.
-- [JPG to PDF](https://codingmarvel.com/jpg-to-pdf): Convert JPG/PNG images into a single PDF document.
-- [PDF to PDF/A](https://codingmarvel.com/pdf-to-pdf-a): Convert PDFs to ISO-compliant archival standards.
-- [Repair PDF](https://codingmarvel.com/repair-pdf): Recover text and streams from corrupted PDF files.
-- [Page Numbers](https://codingmarvel.com/page-numbers): Add custom page numbering (Page X of Y) to PDFs.
-- [Scan to PDF](https://codingmarvel.com/scan-to-pdf): Capture document scans from camera into PDF.
-- [Compare PDF](https://codingmarvel.com/compare-pdf): Side-by-side visual diff comparison between two PDFs.
-- [Crop PDF](https://codingmarvel.com/crop-pdf): Crop page margins and trim document borders.
-- [PDF Forms](https://codingmarvel.com/pdf-forms): Fill existing PDF form fields or create interactive fillable forms.
-- [AI Summarizer](https://codingmarvel.com/ai-summarizer): Generate concise summaries from lengthy PDF documents.
-- [Translate PDF](https://codingmarvel.com/translate-pdf): Translate PDF text across 50+ languages preserving layout.
-- [PDF to Markdown](https://codingmarvel.com/pdf-to-markdown): Convert PDF text and tables to Markdown (.md).
-- [Create Workflow](https://codingmarvel.com/create-workflow): Chain multi-step PDF operations into single-click automations.
-- [Grid Layout](https://codingmarvel.com/grid-layout): Compile multiple PDF pages onto a single sheet (N-Up grid).
-- [Word Counter](https://codingmarvel.com/word-counter): Count words, characters, and readability in documents.
-- [Text Copier](https://codingmarvel.com/text-copier): Extract and copy sequential text chunks for AI prompts.
+- [Merge PDF](https://pdf.codingmarvel.com/merge-pdf): Combine multiple PDF files into one ordered document. Runs in your browser.
+- [Split PDF](https://pdf.codingmarvel.com/split-pdf): Separate PDF pages into standalone documents. Runs in your browser.
+- [Compress PDF](https://pdf.codingmarvel.com/compress-pdf): Reduce PDF file size. Processed on the conversion service, not stored.
+- [PDF to Word](https://pdf.codingmarvel.com/pdf-to-word): Convert PDF documents into editable Word (.docx) files. Processed on the conversion service, not stored.
+- [Word to PDF](https://pdf.codingmarvel.com/word-to-pdf): Convert Microsoft Word (.doc, .docx) files into PDFs with LibreOffice. Processed on the conversion service, not stored.
+- [PDF to Excel](https://pdf.codingmarvel.com/pdf-to-excel): Extract tables from PDF into Excel (.xlsx) spreadsheets. Processed on the conversion service, not stored.
+- [Excel to PDF](https://pdf.codingmarvel.com/excel-to-pdf): Convert Excel sheets and CSV files into PDF. Processed on the conversion service, not stored.
+- [PDF to PowerPoint](https://pdf.codingmarvel.com/pdf-to-powerpoint): Convert PDFs into editable PPTX slide decks. Processed on the conversion service, not stored.
+- [PowerPoint to PDF](https://pdf.codingmarvel.com/powerpoint-to-pdf): Convert PPT/PPTX presentations into PDF. Processed on the conversion service, not stored.
+- [Edit PDF](https://pdf.codingmarvel.com/edit-pdf): Add or replace text and annotations on PDF pages. Processed on the conversion service, not stored.
+- [Protect PDF](https://pdf.codingmarvel.com/protect-pdf): Add an open password to a PDF using standard PDF encryption. Processed on the conversion service, not stored.
+- [Unlock PDF](https://pdf.codingmarvel.com/unlock-pdf): Remove a password you know from a PDF. Processed on the conversion service, not stored.
+- [Redact PDF](https://pdf.codingmarvel.com/redact-pdf): Black out sensitive text and graphics. Processed on the conversion service, not stored.
+- [OCR PDF](https://pdf.codingmarvel.com/ocr-pdf): Add an invisible text layer to scanned PDFs. Processed on the conversion service, not stored.
+- [Sign PDF](https://pdf.codingmarvel.com/sign-pdf): Draw a signature and place it on a PDF page. Runs in your browser.
+- [Watermark](https://pdf.codingmarvel.com/watermark): Stamp custom text over PDF pages. Runs in your browser.
+- [Rotate PDF](https://pdf.codingmarvel.com/rotate-pdf): Rotate PDF pages by 90, 180 or 270 degrees. Runs in your browser.
+- [Organize PDF](https://pdf.codingmarvel.com/organize-pdf): Reorder and delete pages. Runs in your browser.
+- [PDF to JPG](https://pdf.codingmarvel.com/pdf-to-jpg): Export PDF pages as JPG images. Runs in your browser.
+- [JPG to PDF](https://pdf.codingmarvel.com/jpg-to-pdf): Convert JPG/PNG images into a single PDF document. Runs in your browser.
+- [HTML to PDF](https://pdf.codingmarvel.com/html-to-pdf): Turn pasted HTML into a PDF. Processed on the conversion service, not stored.
+- [PDF to PDF/A](https://pdf.codingmarvel.com/pdf-to-pdf-a): Convert PDFs to the PDF/A archival format. Processed on the conversion service, not stored.
+- [Repair PDF](https://pdf.codingmarvel.com/repair-pdf): Re-save a damaged PDF. Processed on the conversion service, not stored.
+- [Page Numbers](https://pdf.codingmarvel.com/page-numbers): Add page numbers (Page X of Y) to PDFs. Runs in your browser.
+- [Scan to PDF](https://pdf.codingmarvel.com/scan-to-pdf): Capture document pages with your camera into a PDF. Runs in your browser.
+- [Compare PDF](https://pdf.codingmarvel.com/compare-pdf): Show two versions of a PDF side by side. Runs in your browser.
+- [Crop PDF](https://pdf.codingmarvel.com/crop-pdf): Crop page margins and trim document borders. Runs in your browser.
+- [PDF Forms](https://pdf.codingmarvel.com/pdf-forms): Add fillable form fields to a PDF. Runs in your browser.
+- [AI Summarizer](https://pdf.codingmarvel.com/ai-summarizer): Early preview that extracts text from the first pages; no AI model is connected yet. Runs in your browser.
+- [Translate PDF](https://pdf.codingmarvel.com/translate-pdf): Early preview that extracts text from the first pages; no AI model is connected yet. Runs in your browser.
+- [PDF to Markdown](https://pdf.codingmarvel.com/pdf-to-markdown): Convert PDF text and tables to Markdown (.md). Processed on the conversion service, not stored.
+- [Create Workflow](https://pdf.codingmarvel.com/create-workflow): Chain watermark, rotate, page numbers, compress, protect, PDF/A and repair steps into one run. Runs in your browser; compress, protect, PDF/A and repair steps use the conversion service.
+- [Grid Layout](https://pdf.codingmarvel.com/grid-layout): Fit several PDF pages onto a single sheet (N-up grid). Runs in your browser.
+- [Word Counter](https://pdf.codingmarvel.com/word-counter): Count words and get a Flesch reading-ease score. Runs in your browser.
+- [Text Copier](https://pdf.codingmarvel.com/text-copier): Extract text and copy it in word chunks for AI prompts. Runs in your browser.
 
 ## Key Articles & Guides
 
-- [Love for PDF vs iLovePDF](https://codingmarvel.com/blog/love-for-pdf-vs-ilovepdf): Privacy, speed, and zero server storage vs cloud uploads.
-- [Love for PDF vs Smallpdf](https://codingmarvel.com/blog/love-for-pdf-vs-smallpdf): Unlimited free tools vs 2-task/day paywalls.
-- [Love for PDF vs Adobe Acrobat Online](https://codingmarvel.com/blog/love-for-pdf-vs-adobe-acrobat-online): Free browser tools vs $19.99/month subscriptions.
-- [Love for PDF vs Sejda PDF](https://codingmarvel.com/blog/love-for-pdf-vs-sejda-pdf): Unlimited processing vs hourly file and page caps.
-- [Complete Sitemap](https://codingmarvel.com/sitemap): Directory of all tools and articles.
+- [Love for PDF vs iLovePDF](https://pdf.codingmarvel.com/blog/love-for-pdf-vs-ilovepdf): Browser-first processing and no file storage vs cloud uploads.
+- [Love for PDF vs Smallpdf](https://pdf.codingmarvel.com/blog/love-for-pdf-vs-smallpdf): Unlimited free tools vs 2-task/day paywalls.
+- [Love for PDF vs Adobe Acrobat Online](https://pdf.codingmarvel.com/blog/love-for-pdf-vs-adobe-acrobat-online): Free browser tools vs $19.99/month subscriptions.
+- [Love for PDF vs Sejda PDF](https://pdf.codingmarvel.com/blog/love-for-pdf-vs-sejda-pdf): Unlimited processing vs hourly file and page caps.
+- [Complete Sitemap](https://pdf.codingmarvel.com/sitemap): Directory of all tools and articles.

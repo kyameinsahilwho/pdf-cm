@@ -2,403 +2,403 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Core Site Pages -->
   <url>
-    <loc>https://codingmarvel.com/</loc>
+    <loc>https://pdf.codingmarvel.com/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/sitemap</loc>
+    <loc>https://pdf.codingmarvel.com/sitemap</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog</loc>
+    <loc>https://pdf.codingmarvel.com/blog</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/llms.txt</loc>
+    <loc>https://pdf.codingmarvel.com/llms.txt</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/llms-full.txt</loc>
+    <loc>https://pdf.codingmarvel.com/llms-full.txt</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <!-- All PDF Tools -->
   <url>
-    <loc>https://codingmarvel.com/merge-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/merge-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/split-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/split-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/compress-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/compress-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/pdf-to-word</loc>
+    <loc>https://pdf.codingmarvel.com/pdf-to-word</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/pdf-to-powerpoint</loc>
+    <loc>https://pdf.codingmarvel.com/pdf-to-powerpoint</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/pdf-to-excel</loc>
+    <loc>https://pdf.codingmarvel.com/pdf-to-excel</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/word-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/word-to-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/powerpoint-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/powerpoint-to-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/excel-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/excel-to-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/edit-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/edit-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/pdf-to-jpg</loc>
+    <loc>https://pdf.codingmarvel.com/pdf-to-jpg</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/jpg-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/jpg-to-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/sign-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/sign-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/watermark</loc>
+    <loc>https://pdf.codingmarvel.com/watermark</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/rotate-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/rotate-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/html-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/html-to-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/unlock-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/unlock-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/protect-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/protect-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/organize-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/organize-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/pdf-to-pdf-a</loc>
+    <loc>https://pdf.codingmarvel.com/pdf-to-pdf-a</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/repair-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/repair-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/page-numbers</loc>
+    <loc>https://pdf.codingmarvel.com/page-numbers</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/scan-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/scan-to-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/ocr-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/ocr-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/compare-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/compare-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/redact-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/redact-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/crop-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/crop-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/pdf-forms</loc>
+    <loc>https://pdf.codingmarvel.com/pdf-forms</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/ai-summarizer</loc>
+    <loc>https://pdf.codingmarvel.com/ai-summarizer</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/translate-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/translate-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/pdf-to-markdown</loc>
+    <loc>https://pdf.codingmarvel.com/pdf-to-markdown</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/create-workflow</loc>
+    <loc>https://pdf.codingmarvel.com/create-workflow</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/grid-layout</loc>
+    <loc>https://pdf.codingmarvel.com/grid-layout</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/word-counter</loc>
+    <loc>https://pdf.codingmarvel.com/word-counter</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/text-copier</loc>
+    <loc>https://pdf.codingmarvel.com/text-copier</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Competitor Comparison Blog Articles -->
   <url>
-    <loc>https://codingmarvel.com/blog/love-for-pdf-vs-ilovepdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/love-for-pdf-vs-ilovepdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/love-for-pdf-vs-smallpdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/love-for-pdf-vs-smallpdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/love-for-pdf-vs-adobe-acrobat-online</loc>
+    <loc>https://pdf.codingmarvel.com/blog/love-for-pdf-vs-adobe-acrobat-online</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/love-for-pdf-vs-sejda-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/love-for-pdf-vs-sejda-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Individual Tool Guides -->
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-merge-pdf-files-online</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-merge-pdf-files-online</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-split-pdf-pages</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-split-pdf-pages</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-compress-pdf-file-size</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-compress-pdf-file-size</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-pdf-to-word-docx</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-pdf-to-word-docx</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-pdf-to-powerpoint-pptx</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-pdf-to-powerpoint-pptx</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-pdf-to-excel-xlsx</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-pdf-to-excel-xlsx</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-word-doc-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-word-doc-to-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-powerpoint-ppt-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-powerpoint-ppt-to-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-excel-xlsx-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-excel-xlsx-to-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-edit-pdf-text-and-images</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-edit-pdf-text-and-images</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-pdf-to-jpg-images</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-pdf-to-jpg-images</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-jpg-images-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-jpg-images-to-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-sign-pdf-documents-online</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-sign-pdf-documents-online</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-add-watermark-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-add-watermark-to-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-rotate-pdf-pages</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-rotate-pdf-pages</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-html-webpages-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-html-webpages-to-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-unlock-password-protected-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-unlock-password-protected-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-encrypt-and-protect-pdf-with-password</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-encrypt-and-protect-pdf-with-password</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-organize-reorder-and-delete-pdf-pages</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-organize-reorder-and-delete-pdf-pages</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-pdf-to-pdf-a-archival</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-pdf-to-pdf-a-archival</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-repair-corrupted-pdf-files</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-repair-corrupted-pdf-files</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-add-page-numbers-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-add-page-numbers-to-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-scan-documents-to-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-scan-documents-to-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-ocr-scanned-pdf-to-searchable-text</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-ocr-scanned-pdf-to-searchable-text</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-compare-two-pdf-documents</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-compare-two-pdf-documents</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-redact-sensitive-text-in-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-redact-sensitive-text-in-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-crop-pdf-page-margins</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-crop-pdf-page-margins</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-create-and-fill-pdf-forms</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-create-and-fill-pdf-forms</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-summarize-pdf-documents-with-ai</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-summarize-pdf-documents-with-ai</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-translate-pdf-documents-online</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-translate-pdf-documents-online</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-convert-pdf-to-markdown</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-convert-pdf-to-markdown</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-create-automated-pdf-workflows</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-create-automated-pdf-workflows</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-arrange-pdf-pages-in-grid-n-up</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-arrange-pdf-pages-in-grid-n-up</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-count-words-in-pdf-and-documents</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-count-words-in-pdf-and-documents</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://codingmarvel.com/blog/how-to-copy-and-extract-text-chunks-from-pdf</loc>
+    <loc>https://pdf.codingmarvel.com/blog/how-to-copy-and-extract-text-chunks-from-pdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

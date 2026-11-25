@@ -72,7 +72,7 @@ const AVAILABLE_TOOLS = [
   {
     toolId: 'protect',
     name: 'Encrypt & Protect',
-    desc: 'Password-protect PDF with strong encryption',
+    desc: 'Password-protect the PDF (encrypted on our server, not stored)',
     iconName: 'Lock',
     gradient: 'from-amber-500 to-orange-600',
     defaultParams: { password: '' }

@@ -1,50 +1,51 @@
-# Love for PDF — Full Technical Specification & LLM Knowledge Base
+# Love for PDF: Full Technical Specification & LLM Knowledge Base
 
-> Website: https://codingmarvel.com
-> Architecture: Zero Server Storage & Client-Side WebAssembly Processing
-> License: Free Unlimited Access
+> Website: https://pdf.codingmarvel.com
+> Architecture: Browser-first React app (pdf-lib, pdf.js) plus a conversion service (Python, Flask, headless LibreOffice) that never stores files
+> License: Free, no account or sign-up
 
 ---
 
 ## 1. Security & Privacy Model
 
-Unlike traditional online PDF portals that upload user files to remote cloud servers (AWS, Google Cloud), Love for PDF executes all PDF manipulation directly inside the user's web browser using WebAssembly (WASM), PDF-Lib, and unpdf engines.
+Love for PDF uses three processing paths. Each tool page shows which one it uses.
 
-- **Zero File Uploads**: PDF bytes never leave the client's local memory for core tools (Merge, Split, Compress, Edit, Protect, Unlock, Watermark, Sign, Organize, Rotate, Crop, Form Fill).
-- **No Data Retention**: No server storage, databases, or third-party file retention logs.
-- **Offline Capability**: Progressive Web App (PWA) supported for offline usage.
+- **Runs in your browser (18 tools)**: The file stays in the browser tab's memory and is never uploaded. Merge, Split, Organize, Rotate, Crop, Watermark, Page Numbers, Grid Layout, Compare, PDF to JPG, JPG to PDF, Scan to PDF, Sign, PDF Forms, Word Counter, Text Copier, AI Summarizer (preview) and Translate PDF (preview).
+- **Conversion service with browser fallback (9 tools)**: Compress, Edit, Redact, Protect, Unlock, Repair, PDF to PDF/A, HTML to PDF and Create Workflow (only its compress, protect, PDF/A and repair steps) send the file to the conversion service first. If the service is unreachable, a simpler in-browser version runs instead. The protect, unlock and PDF/A fallbacks only re-save the file, and the redact fallback only covers content visually.
+- **Conversion service only (8 tools)**: PDF to Word, PDF to Excel, PDF to PowerPoint, PDF to Markdown, Word to PDF, Excel to PDF, PowerPoint to PDF and OCR PDF.
+- **No file storage**: The conversion service writes each upload to a temporary folder, reads the result back and deletes the folder before returning the response. There are no accounts, no database and no file storage. Uploads over 50 MB are rejected by default.
 
 ---
 
 ## 2. Comprehensive Tool API & Workflow Reference
 
 ### Organize & Edit Tools
-1. **Merge PDF** (`/merge-pdf`): Combines N PDF files into a single output file preserving vector graphics and bookmark outlines.
-2. **Split PDF** (`/split-pdf`): Extracts individual pages or custom ranges (e.g. `1-3, 5, 10-12`) into separate PDF files.
-3. **Compress PDF** (`/compress-pdf`): Applies stream deflation and image DPI downsampling (300 DPI -> 150 DPI) to achieve up to 80% file size reduction.
-4. **Edit PDF** (`/edit-pdf`): Interactive browser workspace to insert text layers, draw vector shapes, add image stamps, and annotate pages.
-5. **Organize PDF** (`/organize-pdf`): Drag-and-drop thumbnail grid interface to reorder pages, rotate individual sheets, or delete unwanted pages.
-6. **Protect PDF** (`/protect-pdf`): Applies AES-256 bit encryption with user passwords to prevent unauthorized document viewing.
-7. **Unlock PDF** (`/unlock-pdf`): Removes password restrictions from authorized encrypted PDF files.
-8. **Redact PDF** (`/redact-pdf`): Permanently removes underlying text and vector graphics streams behind bounding boxes to prevent unauthorized data recovery.
-9. **Watermark** (`/watermark`): Stamps custom text strings or logo graphics with opacity and rotation across all pages.
-10. **Rotate PDF** (`/rotate-pdf`): Permanently adjusts page orientation flags (90°, 180°, 270°).
+1. **Merge PDF** (`/merge-pdf`): Combines several PDF files into a single file in the order you choose. Runs in your browser.
+2. **Split PDF** (`/split-pdf`): Extracts individual pages or custom ranges (e.g. `1-3, 5, 10-12`) into separate PDF files. Runs in your browser.
+3. **Compress PDF** (`/compress-pdf`): Reduces file size. Processed on the conversion service, with an in-browser fallback.
+4. **Edit PDF** (`/edit-pdf`): Adds or replaces text and annotations on a page. Processed on the conversion service, with an in-browser fallback.
+5. **Organize PDF** (`/organize-pdf`): Reorders and deletes pages. Runs in your browser.
+6. **Protect PDF** (`/protect-pdf`): Adds an open password using standard PDF encryption. Processed on the conversion service; the file and password are not stored.
+7. **Unlock PDF** (`/unlock-pdf`): Removes a password you know from an encrypted PDF. Processed on the conversion service.
+8. **Redact PDF** (`/redact-pdf`): Removes the text and graphics under each redaction box. Processed on the conversion service.
+9. **Watermark** (`/watermark`): Stamps custom text with your own size, color, opacity and angle across pages. Runs in your browser.
+10. **Rotate PDF** (`/rotate-pdf`): Rotates pages by 90, 180 or 270 degrees. Runs in your browser.
 
 ### Conversion Tools
-11. **PDF to Word** (`/pdf-to-word`): Converts PDF text, tables, and images into Microsoft Word `.docx` documents.
-12. **Word to PDF** (`/word-to-pdf`): Converts Microsoft Word `.doc`/`.docx` documents to standardized PDF.
-13. **PDF to Excel** (`/pdf-to-excel`): Extracts tabular data structures from PDF into Microsoft Excel `.xlsx` spreadsheets.
-14. **Excel to PDF** (`/excel-to-pdf`): Converts spreadsheet tables into printable PDF files.
-15. **PDF to PowerPoint** (`/pdf-to-powerpoint`): Converts PDF slide decks into editable `.pptx` presentation slides.
-16. **PowerPoint to PDF** (`/powerpoint-to-pdf`): Converts PPT/PPTX slideshows to shareable PDF.
-17. **PDF to JPG** (`/pdf-to-jpg`): Exports PDF pages as standalone high-resolution JPEG images.
-18. **JPG to PDF** (`/jpg-to-pdf`): Converts images (JPG, PNG, WebP) into a consolidated PDF file.
-19. **HTML to PDF** (`/html-to-pdf`): Renders raw HTML markup into PDF documents.
-20. **PDF to Markdown** (`/pdf-to-markdown`): Converts PDF text, headings, and lists to clean `.md` syntax.
+11. **PDF to Word** (`/pdf-to-word`): Converts PDF text, tables and images into Word `.docx` documents with pdf2docx and PyMuPDF. Conversion service.
+12. **Word to PDF** (`/word-to-pdf`): Converts Word `.doc`/`.docx` documents to PDF with headless LibreOffice. Conversion service. If the service is unavailable, the browser fallback only extracts plain text and does not produce a real PDF, so try again later.
+13. **PDF to Excel** (`/pdf-to-excel`): Extracts tables from PDF into Excel `.xlsx` spreadsheets. Conversion service.
+14. **Excel to PDF** (`/excel-to-pdf`): Converts `.xls`, `.xlsx` and `.csv` files into PDF. Conversion service.
+15. **PDF to PowerPoint** (`/pdf-to-powerpoint`): Converts PDF pages into editable `.pptx` slides. Conversion service.
+16. **PowerPoint to PDF** (`/powerpoint-to-pdf`): Converts PPT/PPTX slideshows to PDF. Conversion service.
+17. **PDF to JPG** (`/pdf-to-jpg`): Exports each PDF page as a JPEG image. Runs in your browser.
+18. **JPG to PDF** (`/jpg-to-pdf`): Converts images into a single PDF file. Runs in your browser.
+19. **HTML to PDF** (`/html-to-pdf`): Renders pasted HTML into a PDF. The HTML is processed on the conversion service and deleted as soon as the PDF is returned, with an in-browser fallback.
+20. **PDF to Markdown** (`/pdf-to-markdown`): Converts PDF text, headings and lists to `.md`. Conversion service.
 
 ### AI & Smart Tools
-21. **OCR PDF** (`/ocr-pdf`): Applies Optical Character Recognition (OCR) to convert scanned images into searchable PDF text spans.
-22. **AI Summarizer** (`/ai-summarizer`): Generates concise executive summaries and bullet points from long PDF files.
-23. **Translate PDF** (`/translate-pdf`): Translates document text into 50+ languages while keeping original layout intact.
-24. **Word Counter** (`/word-counter`): Calculates word count, character count, sentence length, and readability scores.
-25. **Text Copier** (`/text-copier`): Extracts text into sequential word chunks formatted for AI prompts.
+21. **OCR PDF** (`/ocr-pdf`): Adds an invisible text layer to scanned PDFs. Conversion service.
+22. **AI Summarizer** (`/ai-summarizer`): Early preview that extracts text from the first pages in the browser; no AI model is connected yet.
+23. **Translate PDF** (`/translate-pdf`): Early preview that extracts text from the first pages in the browser; no AI model is connected yet.
+24. **Word Counter** (`/word-counter`): Counts words, characters and sentences and gives a Flesch reading-ease score. Runs in your browser.
+25. **Text Copier** (`/text-copier`): Extracts text into sequential word chunks for AI prompts. Runs in your browser.

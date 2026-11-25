@@ -5,7 +5,8 @@ import { Header } from './header';
 import { MarkdownRenderer } from './markdown-renderer';
 import { useBlogPost } from '@/hooks/use-blogs';
 import { TOOL_REGISTRY } from '@/lib/tools-data';
-import { useSeoHead, buildBreadcrumbSchema } from '@/lib/seo-helper';
+import { ToolPrivacyBadge } from './tool-privacy-badge';
+import { useSeoHead, buildBreadcrumbSchema, SITE_URL, SITE_LOGO } from '@/lib/seo-helper';
 import { Clock, Calendar, User, ArrowLeft, ExternalLink, Zap } from 'lucide-react';
 
 interface BlogPostPageProps {
@@ -16,13 +17,13 @@ function BlogPostContent() {
   const { slug } = useParams<{ slug: string }>();
   const { data: post, isLoading, isError } = useBlogPost(slug);
 
-  const articleOgImage = post?.ogImage || 'https://codingmarvel.com/favicon.svg';
+  const articleOgImage = post?.ogImage || SITE_LOGO;
 
   useSeoHead({
     title: post ? (post.metaTitle || `${post.title} | Love for PDF`) : 'Blog Article | Love for PDF',
     description: post ? (post.metaDescription || post.excerpt) : 'Read PDF guides and technical comparison articles on Love for PDF.',
     keywords: post ? post.tags : ['pdf guide', 'pdf tools'],
-    canonicalUrl: post ? `https://codingmarvel.com/blog/${post.slug}` : 'https://codingmarvel.com/blog',
+    canonicalUrl: post ? `${SITE_URL}/blog/${post.slug}` : `${SITE_URL}/blog`,
     ogType: 'article',
     ogImage: articleOgImage,
     article: post
@@ -42,7 +43,7 @@ function BlogPostContent() {
               '@type': 'BlogPosting',
               mainEntityOfPage: {
                 '@type': 'WebPage',
-                '@id': `https://codingmarvel.com/blog/${post.slug}`,
+                '@id': `${SITE_URL}/blog/${post.slug}`,
               },
               headline: post.title,
               description: post.excerpt,
@@ -52,15 +53,15 @@ function BlogPostContent() {
               author: {
                 '@type': 'Organization',
                 name: post.author,
-                url: 'https://codingmarvel.com',
+                url: SITE_URL,
               },
               publisher: {
                 '@type': 'Organization',
                 name: 'Love for PDF',
-                url: 'https://codingmarvel.com',
+                url: SITE_URL,
                 logo: {
                   '@type': 'ImageObject',
-                  url: 'https://codingmarvel.com/favicon.svg',
+                  url: SITE_LOGO,
                 },
               },
               keywords: post.tags.join(', '),
@@ -171,7 +172,7 @@ function BlogPostContent() {
               <h3 className="text-lg font-bold text-white">Try Recommended PDF Tools Now</h3>
             </div>
             <p className="text-xs text-slate-400">
-              Launch these tools directly in your browser with zero server storage and 100% privacy:
+              Free, no sign-up, and your files are never stored:
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -186,6 +187,7 @@ function BlogPostContent() {
                       {tool.name}
                     </div>
                     <div className="text-[11px] text-slate-400 line-clamp-1">{tool.desc}</div>
+                    <ToolPrivacyBadge tool={tool} size="short" className="mt-1.5" />
                   </div>
                   <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-amber-400 transition-colors shrink-0 ml-2" />
                 </Link>
